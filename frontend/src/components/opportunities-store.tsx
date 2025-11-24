@@ -17,6 +17,7 @@ import {
   Grid3X3,
   List
 } from 'lucide-react'
+import HeroCarousel from './hero-carousel'
 
 // Type for opportunity data
 type Opportunity = {
@@ -108,6 +109,11 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
           <p className="text-muted-foreground mt-1">
             Descubra as melhores oportunidades disponíveis no mercado
           </p>
+
+          {/* Hero carousel: novidades, avisos e promoções */}
+          <div className="mt-6">
+            <HeroCarousel />
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-sm text-gold-500 font-semibold">
