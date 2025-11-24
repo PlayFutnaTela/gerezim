@@ -22,6 +22,20 @@ const config = {
                 playfair: ['var(--font-playfair)', 'serif'],
             },
             colors: {
+                // premium palette (navy + gold)
+                navy: {
+                    50: '#f6f8fb',
+                    100: '#eef4fb',
+                    300: '#3b5b7a',
+                    500: '#0f2740',
+                    600: '#0e2238',
+                    700: '#0b2132'
+                },
+                gold: {
+                    50: '#fff9f0',
+                    300: '#c6a15a',
+                    500: '#b7902e'
+                },
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
