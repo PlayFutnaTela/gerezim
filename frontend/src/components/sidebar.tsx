@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 
 export default function Sidebar() {
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-slate-50/50">
+    <div className="flex h-screen w-[12.8rem] flex-col border-r bg-slate-50/50">
       <div className="flex h-14 items-center border-b px-6 font-semibold tracking-tight">
         Intermediador
       </div>
