@@ -104,13 +104,13 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Loja de Oportunidades</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Oportunidades</h1>
           <p className="text-muted-foreground mt-1">
             Descubra as melhores oportunidades disponíveis no mercado
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-gold-500 font-semibold">
             {filteredOpportunities?.length || 0} produtos
           </span>
         </div>
@@ -120,7 +120,7 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
       <div className="space-y-4">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gold-300 h-4 w-4" />
           <Input
             placeholder="Buscar oportunidades..."
             value={searchTerm}
@@ -137,7 +137,7 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
             <div className="flex-1">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-full">
-                  <Filter className="h-4 w-4 mr-2" />
+                  <Filter className="h-4 w-4 mr-2 text-gold-300" />
                   <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -189,14 +189,14 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
               size="icon"
               onClick={() => setViewMode('grid')}
             >
-              <Grid3X3 className="h-4 w-4" />
+              <Grid3X3 className={`h-4 w-4 ${viewMode === 'grid' ? 'text-gold-500' : ''}`} />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="icon"
               onClick={() => setViewMode('list')}
             >
-              <List className="h-4 w-4" />
+              <List className={`h-4 w-4 ${viewMode === 'list' ? 'text-gold-500' : ''}`} />
             </Button>
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
               </CardHeader>
 
               <CardContent className="flex-1">
-                <div className="text-2xl font-bold mb-2">
+                <div className="text-2xl font-bold mb-2 text-gold-500">
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(opp.value))}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
@@ -269,7 +269,7 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
                   <Button variant="outline" className="flex-1">
                     Ver detalhes
                   </Button>
-                  <Button className="flex-1">
+                  <Button className="flex-1 bg-gold-500 text-white hover:bg-gold-600">
                     <ShoppingCart className="h-4 w-4 mr-2" /> Comprar
                   </Button>
                 </div>

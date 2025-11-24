@@ -2,13 +2,20 @@ import Link from "next/link"
 import { LayoutDashboard, Briefcase, Users, KanbanSquare, BarChart3, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+import Image from "next/image"
+
 export default function Sidebar() {
   return (
-    <div className="flex h-screen w-[12.8rem] flex-col border-r bg-navy-500 text-white border-navy-700">
-      <div className="flex h-14 items-center border-b border-navy-700 px-6 font-semibold tracking-tight text-white">
-        Gerezim
+    // sidebar fixed to the left of the viewport
+    <div className="fixed inset-y-0 left-0 w-[12.8rem] flex flex-col border-r bg-navy-500 text-white border-navy-700">
+      <div className="flex h-14 items-center border-b border-navy-700 px-4 font-semibold tracking-tight text-white">
+        {/* Logo (left) and name (right) - name increased by 20% */}
+        <div className="flex items-center gap-3">
+          <Image src="/logo.png" alt="Gerezim" width={40} height={40} className="object-contain rounded" />
+          <div className="text-[1.2rem] font-semibold">Gerezim</div>
+        </div>
       </div>
-      <div className="flex-1 overflow-auto py-4">
+      <div className="flex-1 overflow-y-auto py-4">
         <nav className="grid items-start px-4 text-sm font-medium">
           <Link
             href="/dashboard"
