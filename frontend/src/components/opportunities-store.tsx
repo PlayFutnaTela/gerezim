@@ -141,6 +141,16 @@ export default function OpportunitiesStore({
     setFavorites(newFavorites)
   }
 
+  const handleWhatsApp = (item: Opportunity | Product) => {
+    const isProduct = 'images' in item
+    const message = isProduct
+      ? `Olá! Tenho interesse no produto: ${item.title}. ${('subtitle' in item && item.subtitle) ? `(${item.subtitle})` : ''} Poderia me fornecer mais informações?`
+      : `Olá! Tenho interesse na oportunidade: ${item.title}. Poderia me fornecer mais informações?`
+    const encodedMessage = encodeURIComponent(message)
+    const whatsappUrl = `https://wa.me/5511981442518?text=${encodedMessage}`
+    window.open(whatsappUrl, '_blank')
+  }
+
   const categories = ['all', 'carro', 'imovel', 'empresa', 'Premium', 'eletronicos', 'Cartas Contempladas', 'Industrias', 'Embarcações']
   const statuses = ['all', 'novo', 'em_negociacao', 'vendido', 'Ativo']
   const types = [
@@ -152,22 +162,26 @@ export default function OpportunitiesStore({
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Oportunidades</h1>
-          <p className="text-muted-foreground mt-1">
-            Descubra as melhores oportunidades disponíveis no mercado
-          </p>
-
-          {/* Hero carousel: novidades, avisos e promoções */}
-          <div className="mt-6 w-full max-w-4xl mx-auto">
-            <HeroCarousel />
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Oportunidades</h1>
+            <p className="text-muted-foreground mt-1">
+              Descubra as melhores oportunidades disponíveis no mercado
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-sm text-gold-500 font-semibold">
+              {filteredItems?.length || 0} itens
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-sm text-gold-500 font-semibold">
-            {filteredItems?.length || 0} itens
-          </span>
+
+        {/* Hero Carousel - Centralizado */}
+        <div className="w-full flex justify-center">
+          <div className="w-full max-w-6xl">
+            <HeroCarousel />
+          </div>
         </div>
       </div>
 
@@ -393,7 +407,10 @@ export default function OpportunitiesStore({
                       Ver detalhes
                     </Button>
                   </Link>
-                  <Button className="flex-1 bg-gold-500 text-white hover:bg-gold-600">
+                  <Button 
+                    onClick={() => handleWhatsApp(item)}
+                    className="flex-1 bg-gold-500 text-white hover:bg-gold-600"
+                  >
                     <ShoppingCart className="h-4 w-4 mr-2" /> {'images' in item ? 'Comprar' : 'Negociar'}
                   </Button>
                 </div>
@@ -509,7 +526,10 @@ export default function OpportunitiesStore({
                         Ver detalhes
                       </Button>
                     </Link>
-                    <Button className="bg-gold-500 text-white hover:bg-gold-600">
+                    <Button 
+                      onClick={() => handleWhatsApp(item)}
+                      className="bg-gold-500 text-white hover:bg-gold-600"
+                    >
                       <ShoppingCart className="h-4 w-4 mr-2" /> {'images' in item ? 'Comprar' : 'Negociar'}
                     </Button>
                   </div>
