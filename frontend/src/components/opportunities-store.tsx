@@ -18,7 +18,6 @@ import {
   Grid3X3,
   List
 } from 'lucide-react'
-import HeroCarousel from './hero-carousel'
 
 // Type for opportunity data
 type Opportunity = {
@@ -177,10 +176,14 @@ export default function OpportunitiesStore({
           </div>
         </div>
 
-        {/* Hero Carousel - Centralizado */}
-        <div className="w-full flex justify-center">
+        {/* Banner */}
+        <div className="w-full flex justify-center mt-8">
           <div className="w-full max-w-6xl">
-            <HeroCarousel />
+            <img
+              src="/slide-desktop/1.png"
+              alt="Banner"
+              className="w-full h-auto rounded-xl shadow-lg"
+            />
           </div>
         </div>
       </div>
