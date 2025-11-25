@@ -22,6 +22,7 @@ import {
 import { TextRotate } from '@/style/efect-hover-text'
 import ImageHeroCarousel from './image-hero-carousel'
 import FooterSlider from './footer-slider'
+import AreasOfOperation from './areas-of-operation'
 
 // Type for opportunity data
 type Opportunity = {
@@ -556,6 +557,11 @@ export default function OpportunitiesStore({
           ))}
         </div>
       )}
+
+      {/* Areas de atuação (inserido antes do footer) */}
+      <div className="mt-8">
+        <AreasOfOperation />
+      </div>
 
       {/* Footer Section */}
       <Separator className="my-8" />
