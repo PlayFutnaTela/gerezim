@@ -12,6 +12,18 @@ const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILES = 15
 const MAX_FILE_MB = 15
 
+// Available categories from the opportunities search system
+const AVAILABLE_CATEGORIES = [
+  'Carro',
+  'Imovel',
+  'Empresa',
+  'Premium',
+  'Eletronicos',
+  'Cartas Contempladas',
+  'Industrias',
+  'Embarcações'
+]
+
 export default function ProductForm({ onCreated, initialSession }: Props) {
   // Supabase client for database operations (insert/update products)
   const supabase = createClient(initialSession)
@@ -159,7 +171,12 @@ export default function ProductForm({ onCreated, initialSession }: Props) {
         {/* SKU removed - no longer collected */}
         <div>
           <label className="text-sm font-medium">Categoria</label>
-          <input value={category} onChange={e=>setCategory(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
+          <select value={category} onChange={e=>setCategory(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
+            <option value="">Selecione abaixo</option>
+            {AVAILABLE_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="text-sm font-medium">Status</label>
