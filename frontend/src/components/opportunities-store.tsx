@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -386,9 +387,11 @@ export default function OpportunitiesStore({
 
               <CardFooter>
                 <div className="flex w-full gap-2">
-                  <Button variant="outline" className="flex-1">
-                    Ver detalhes
-                  </Button>
+                  <Link href={`/oportunidades/${item.id}`} className="flex-1">
+                    <Button variant="outline" className="w-full">
+                      Ver detalhes
+                    </Button>
+                  </Link>
                   <Button className="flex-1 bg-gold-500 text-white hover:bg-gold-600">
                     <ShoppingCart className="h-4 w-4 mr-2" /> {'images' in item ? 'Comprar' : 'Negociar'}
                   </Button>
@@ -500,9 +503,11 @@ export default function OpportunitiesStore({
 
                 <div className="flex flex-col justify-between">
                   <div className="flex gap-2">
-                    <Button variant="outline">
-                      Ver detalhes
-                    </Button>
+                    <Link href={`/oportunidades/${item.id}`}>
+                      <Button variant="outline">
+                        Ver detalhes
+                      </Button>
+                    </Link>
                     <Button className="bg-gold-500 text-white hover:bg-gold-600">
                       <ShoppingCart className="h-4 w-4 mr-2" /> {'images' in item ? 'Comprar' : 'Negociar'}
                     </Button>
