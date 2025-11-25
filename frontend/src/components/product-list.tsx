@@ -100,7 +100,7 @@ export default function ProductList({ products: initialProducts }: Props) {
                 <th className="text-left py-2">Categoria</th>
                 <th className="text-left py-2">Preço</th>
                 <th className="text-left py-2">Estoque</th>
-                <th className="text-left py-2">% Comissão</th>
+                <th className="text-left py-2">Comissão (R$)</th>
                 <th className="text-left py-2">Status</th>
                 <th className="text-left py-2">Imagens</th>
                 <th className="text-left py-2">Ações</th>
@@ -118,7 +118,15 @@ export default function ProductList({ products: initialProducts }: Props) {
                   <td className="py-2">{product.category}</td>
                   <td className="py-2">R$ {product.price.toFixed(2)}</td>
                   <td className="py-2">{product.stock}</td>
-                  <td className="py-2">{(product as any).commission_percent != null ? `${Number((product as any).commission_percent).toFixed(2)}%` : '-'}</td>
+                  <td className="py-2">
+                    {(() => {
+                      const price = Number(product.price || 0)
+                      const pct = Number((product as any).commission_percent ?? 0)
+                      if (!price || !pct) return '-'
+                      const commissionValue = (price * pct) / 100
+                      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(commissionValue)
+                    })()}
+                  </td>
                   <td className="py-2">
                     <span className={`px-2 py-1 rounded text-xs ${
                       product.status === 'active' ? 'bg-green-100 text-green-800' :
