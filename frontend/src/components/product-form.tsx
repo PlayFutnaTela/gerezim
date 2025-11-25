@@ -1,11 +1,28 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+
+type Product = {
+  id: string
+  title: string
+  subtitle?: string
+  description?: string
+  price: number
+  category: string
+  status: string
+  tags: string[]
+  stock: number
+  images: string[]
+  created_at: string
+}
 
 type Props = {
   onCreated?: () => void
+  onUpdated?: (product: Product) => void
+  onCancel?: () => void
   initialSession?: any
+  product?: Product | null
 }
 
 const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -24,7 +41,7 @@ const AVAILABLE_CATEGORIES = [
   'Embarcações'
 ]
 
-export default function ProductForm({ onCreated, initialSession }: Props) {
+export default function ProductForm({ onCreated, onUpdated, onCancel, initialSession, product }: Props) {
   // Supabase client for database operations (insert/update products)
   const supabase = createClient(initialSession)
 
@@ -39,8 +56,37 @@ export default function ProductForm({ onCreated, initialSession }: Props) {
 
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+  const [existingImages, setExistingImages] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Initialize form with product data if editing
+  useEffect(() => {
+    if (product) {
+      setTitle(product.title)
+      setSubtitle(product.subtitle || '')
+      setDescription(product.description || '')
+      setPrice(product.price.toString())
+      setCategory(product.category)
+      setStatus(product.status)
+      setTags(product.tags.join(', '))
+      setStock(product.stock)
+      setExistingImages(product.images)
+    } else {
+      // Reset for new product
+      setTitle('')
+      setSubtitle('')
+      setDescription('')
+      setPrice('0')
+      setCategory('')
+      setStatus('draft')
+      setTags('')
+      setStock('')
+      setExistingImages([])
+      setFiles([])
+      setPreviews([])
+    }
+  }, [product])
 
   function addFiles(list: FileList | null) {
     if (!list) return
@@ -66,14 +112,11 @@ export default function ProductForm({ onCreated, initialSession }: Props) {
     setLoading(true)
 
     try {
-      // Insert product record first (without images)
-
       const payload = {
         title,
         subtitle,
         description,
         price: Number(price || 0),
-        // SKU removed — not included in payload
         category,
         status,
         tags: tags ? tags.split(',').map(t => t.trim()) : [],
@@ -81,27 +124,42 @@ export default function ProductForm({ onCreated, initialSession }: Props) {
         images: []
       }
 
-      console.debug('Creating product payload', payload)
-
-      const { data, error: insertError } = await supabase.from('products').insert(payload).select('id').single()
-
-      if (insertError || !data?.id) {
-        // If DB reports conflict (409) the Supabase error usually has status === 409
-        if ((insertError as any)?.status === 409) {
-          // give a user-friendly explanation — most common is unique constraint (e.g. duplicate unique field)
-          setError('Conflito ao inserir produto (409). Provavelmente uma constraint única foi violada — verifique campos únicos.')
-        } else {
-          setError(insertError?.message || 'Erro ao inserir produto')
+      let id: string
+      if (product) {
+        // Update existing product
+        const { error: updateError } = await supabase
+          .from('products')
+          .update(payload)
+          .eq('id', product.id)
+        if (updateError) {
+          setError(updateError.message)
+          setLoading(false)
+          return
         }
-        console.error('Insert product error', { insertError })
-        setLoading(false)
-        return
+        id = product.id
+      } else {
+        // Insert new product
+        const { data, error: insertError } = await supabase
+          .from('products')
+          .insert(payload)
+          .select('id')
+          .single()
+
+        if (insertError || !data?.id) {
+          if ((insertError as any)?.status === 409) {
+            setError('Conflito ao inserir produto (409). Provavelmente uma constraint única foi violada.')
+          } else {
+            setError(insertError?.message || 'Erro ao inserir produto')
+          }
+          setLoading(false)
+          return
+        }
+        id = data.id
       }
 
-      const id = data.id
-      const uploadedPaths: string[] = []
+      const uploadedPaths: string[] = [...existingImages] // Keep existing images
 
-      // Upload files via server API route (uses service role, avoids client RLS issues)
+      // Upload new files if any
       if (files.length > 0) {
         const formData = new FormData()
         formData.append('productId', id)
@@ -123,24 +181,56 @@ export default function ProductForm({ onCreated, initialSession }: Props) {
         uploadedPaths.push(...uploadResult.urls)
       }
 
-      // update product with images
-      const { error: updateError } = await supabase.from('products').update({ images: uploadedPaths }).eq('id', id)
-      if (updateError) { setError(updateError.message); setLoading(false); return }
+      // Update product with all images
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ images: uploadedPaths })
+        .eq('id', id)
+      if (updateError) {
+        setError(updateError.message)
+        setLoading(false)
+        return
+      }
 
-      // reset
-      setTitle(''); setSubtitle(''); setDescription(''); setPrice('0'); setCategory(''); setTags(''); setStock('')
-      setFiles([]); setPreviews([])
+      // Reset form if creating new
+      if (!product) {
+        setTitle('')
+        setSubtitle('')
+        setDescription('')
+        setPrice('0')
+        setCategory('')
+        setTags('')
+        setStock('')
+        setFiles([])
+        setPreviews([])
+        setExistingImages([])
+      }
+
       setLoading(false)
-      if (onCreated) onCreated()
-    } catch (err:any) {
+      if (product && onUpdated) {
+        // Fetch updated product
+        const { data: updatedProduct } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single()
+        if (updatedProduct) onUpdated(updatedProduct as Product)
+      } else if (onCreated) {
+        onCreated()
+      }
+    } catch (err: any) {
       setError(err?.message || String(err))
       setLoading(false)
     }
   }
 
-  function removeAt(i:number){
-    const copy = [...files]; copy.splice(i,1); setFiles(copy)
-    const prev = [...previews]; prev.splice(i,1); setPreviews(prev)
+  function removeAt(i: number) {
+    const copy = [...files]; copy.splice(i, 1); setFiles(copy)
+    const prev = [...previews]; prev.splice(i, 1); setPreviews(prev)
+  }
+
+  function removeExistingImage(i: number) {
+    const copy = [...existingImages]; copy.splice(i, 1); setExistingImages(copy)
   }
 
   return (
@@ -204,18 +294,31 @@ export default function ProductForm({ onCreated, initialSession }: Props) {
         <label className="text-sm font-medium">Imagens (até {MAX_FILES}, cada até {MAX_FILE_MB}MB)</label>
         <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>addFiles(e.target.files)} className="block mt-2" />
         <div className="flex gap-2 mt-3 flex-wrap">
-          {previews.map((p,i)=> (
-            <div key={p} className="relative w-28 h-20 rounded overflow-hidden border">
+          {/* Existing images */}
+          {existingImages.map((img, i) => (
+            <div key={`existing-${i}`} className="relative w-28 h-20 rounded overflow-hidden border">
+              <img src={img} className="w-full h-full object-cover" />
+              <button type="button" onClick={() => removeExistingImage(i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs">×</button>
+            </div>
+          ))}
+          {/* New previews */}
+          {previews.map((p, i) => (
+            <div key={`new-${i}`} className="relative w-28 h-20 rounded overflow-hidden border">
               <img src={p} className="w-full h-full object-cover" />
-              <button type="button" onClick={()=>removeAt(i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs">×</button>
+              <button type="button" onClick={() => removeAt(i)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs">×</button>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {onCancel && (
+          <button type="button" onClick={onCancel} className="px-4 py-2 border rounded">
+            Cancelar
+          </button>
+        )}
         <button disabled={loading} type="submit" className="bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded">
-          {loading ? 'Enviando...' : 'Criar produto'}
+          {loading ? 'Salvando...' : product ? 'Atualizar produto' : 'Criar produto'}
         </button>
       </div>
     </form>

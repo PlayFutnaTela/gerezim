@@ -21,7 +21,7 @@ export default function HeroCarousel({ interval = 5000 }: { interval?: number })
   const go = (i: number) => setIndex((i + slides.length) % slides.length)
 
   return (
-    <div className="flex justify-center w-screen py-6 -ml-8">
+    <div className="w-full py-6 px-4 sm:px-6">
       <div className="w-full">
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-500">
           {/* track */}

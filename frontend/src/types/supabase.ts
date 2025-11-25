@@ -102,6 +102,47 @@ export interface Database {
           created_at?: string
         }
       }
+      products: {
+        Row: {
+          id: string
+          title: string
+          subtitle: string | null
+          description: string | null
+          price: number
+          category: string
+          status: string
+          tags: string[]
+          stock: number
+          images: string[]
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          subtitle?: string | null
+          description?: string | null
+          price: number
+          category: string
+          status?: string
+          tags?: string[]
+          stock?: number
+          images?: string[]
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          subtitle?: string | null
+          description?: string | null
+          price?: number
+          category?: string
+          status?: string
+          tags?: string[]
+          stock?: number
+          images?: string[]
+          created_at?: string
+        }
+      }
     }
   }
 }
