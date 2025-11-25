@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { 
+import {
   Search, 
   Filter, 
   MapPin,
@@ -18,8 +18,10 @@ import {
   Grid3X3,
   List
 } from 'lucide-react'
-import FooterSlider from './footer-slider'
+
+import { TextRotate } from '@/style/efect-hover-text'
 import ImageHeroCarousel from './image-hero-carousel'
+import FooterSlider from './footer-slider'
 
 // Type for opportunity data
 type Opportunity = {
@@ -67,7 +69,7 @@ export default function OpportunitiesStore({
   const [selectedType, setSelectedType] = useState<'all' | 'opportunities' | 'products'>('all')
   const [sortOption, setSortOption] = useState('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [favorites, setFavorites] = useState<Set<string>>(new Set<string>())
 
   // Filter and sort items (opportunities and products)
   useEffect(() => {
@@ -165,11 +167,24 @@ export default function OpportunitiesStore({
       {/* Header Section */}
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Oportunidades</h1>
-            <p className="text-muted-foreground mt-1">
-              Descubra as melhores oportunidades disponíveis no mercado
-            </p>
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 flex items-center justify-center">
+              <img src="/logo.png" alt="Gerezim logo" className="h-12 sm:h-14 md:h-16 lg:h-20 object-contain" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gerezim</h1>
+              <div className="text-muted-foreground mt-1">
+                <TextRotate
+                  texts={["Negócios exclusivos", "Oportunidades únicas", "Produtos Premium"]}
+                  splitBy="words"
+                  // keep the same visual size/position; TextRotate will inherit styles from this parent p
+                  animate={{ y: 0, opacity: 1 }}
+                  initial={{ y: '100%', opacity: 0 }}
+                  exit={{ y: '-120%', opacity: 0 }}
+                  rotationInterval={3000}
+                />
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm text-gold-500 font-semibold">

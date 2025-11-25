@@ -175,7 +175,7 @@ const TextRotate = forwardRef<TextRotateRef, TextRotateProps>(
     }, [next, rotationInterval, auto])
 
     return (
-      <motion.span
+      <motion.div
         className={cn("flex flex-wrap whitespace-pre-wrap", mainClassName)}
         {...props}
         layout
@@ -241,7 +241,7 @@ const TextRotate = forwardRef<TextRotateRef, TextRotateProps>(
             })}
           </motion.div>
         </AnimatePresence>
-      </motion.span>
+      </motion.div>
     )
   }
 )

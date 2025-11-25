@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import OpportunitiesStore from '@/components/opportunities-store'
-import HeroHover from '@/components/hero-hover'
+// hero removed
 
 // Type for opportunity data
 type Opportunity = {
@@ -48,12 +48,9 @@ export default async function OpportunitiesPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <>
-      <HeroHover />
-      <OpportunitiesStore
-        initialOpportunities={opportunities || []}
-        initialProducts={products || []}
-      />
-    </>
+    <OpportunitiesStore
+      initialOpportunities={opportunities || []}
+      initialProducts={products || []}
+    />
   )
 }
