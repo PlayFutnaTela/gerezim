@@ -111,7 +111,7 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
           </p>
 
           {/* Hero carousel: novidades, avisos e promoções */}
-          <div className="mt-6">
+          <div className="mt-6 w-full max-w-4xl mx-auto">
             <HeroCarousel />
           </div>
         </div>

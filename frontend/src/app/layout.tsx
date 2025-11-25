@@ -9,6 +9,9 @@ const playfair = Playfair_Display({ subsets: ["latin"] });
 export const metadata: Metadata = {
     title: "Gerezim Intermediações",
     description: "Plataforma de gestão de negócios",
+    icons: {
+        icon: '/logo-icon.ico',
+    },
 };
 
 export default function RootLayout({
