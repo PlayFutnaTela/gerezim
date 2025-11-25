@@ -32,38 +32,72 @@ type Opportunity = {
   created_at: string
 }
 
-export default function OpportunitiesStore({ initialOpportunities }: { initialOpportunities: Opportunity[] }) {
+// Type for product data
+type Product = {
+  id: string
+  title: string
+  subtitle?: string
+  description: string
+  price: number
+  category: string
+  status: string
+  tags?: string[]
+  stock: number
+  images: string[]
+  created_at: string
+}
+
+export default function OpportunitiesStore({
+  initialOpportunities,
+  initialProducts
+}: {
+  initialOpportunities: Opportunity[]
+  initialProducts: Product[]
+}) {
   const [opportunities, setOpportunities] = useState<Opportunity[]>(initialOpportunities || [])
-  const [filteredOpportunities, setFilteredOpportunities] = useState<Opportunity[]>(initialOpportunities || [])
+  const [products, setProducts] = useState<Product[]>(initialProducts || [])
+  const [filteredItems, setFilteredItems] = useState<(Opportunity | Product)[]>([])
   const [loading] = useState(false) // Data is already loaded server-side
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('all')
+  const [selectedType, setSelectedType] = useState<'all' | 'opportunities' | 'products'>('all')
   const [sortOption, setSortOption] = useState('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-  // Filter and sort opportunities
+  // Filter and sort items (opportunities and products)
   useEffect(() => {
-    let result = [...opportunities]
+    let result: (Opportunity | Product)[] = []
+
+    // Combine opportunities and products based on selected type
+    if (selectedType === 'all') {
+      result = [...opportunities, ...products]
+    } else if (selectedType === 'opportunities') {
+      result = [...opportunities]
+    } else if (selectedType === 'products') {
+      result = [...products]
+    }
 
     // Apply search filter
     if (searchTerm) {
-      result = result.filter(opp => 
-        opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        opp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        opp.location.toLowerCase().includes(searchTerm.toLowerCase())
+      result = result.filter(item =>
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ('location' in item && item.location?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        ('subtitle' in item && item.subtitle?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        ('tags' in item && item.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
       )
     }
 
     // Apply category filter
     if (selectedCategory !== 'all') {
-      result = result.filter(opp => opp.category === selectedCategory)
+      result = result.filter(item => item.category === selectedCategory)
     }
 
     // Apply status filter
     if (selectedStatus !== 'all') {
-      result = result.filter(opp => opp.status === selectedStatus)
+      result = result.filter(item => item.status === selectedStatus)
     }
 
     // Apply sorting
@@ -75,17 +109,25 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
         result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
         break
       case 'price_asc':
-        result.sort((a, b) => Number(a.value) - Number(b.value))
+        result.sort((a, b) => {
+          const priceA = 'price' in a ? a.price : Number(a.value)
+          const priceB = 'price' in b ? b.price : Number(b.value)
+          return priceA - priceB
+        })
         break
       case 'price_desc':
-        result.sort((a, b) => Number(b.value) - Number(a.value))
+        result.sort((a, b) => {
+          const priceA = 'price' in a ? a.price : Number(a.value)
+          const priceB = 'price' in b ? b.price : Number(b.value)
+          return priceB - priceA
+        })
         break
       default:
         break
     }
 
-    setFilteredOpportunities(result)
-  }, [searchTerm, selectedCategory, selectedStatus, sortOption, opportunities])
+    setFilteredItems(result)
+  }, [searchTerm, selectedCategory, selectedStatus, selectedType, sortOption, opportunities, products])
 
   const toggleFavorite = (id: string) => {
     const newFavorites = new Set(favorites)
@@ -97,8 +139,13 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
     setFavorites(newFavorites)
   }
 
-  const categories = ['all', 'carro', 'imovel', 'empresa', 'item_premium']
-  const statuses = ['all', 'novo', 'em_negociacao', 'vendido']
+  const categories = ['all', 'carro', 'imovel', 'empresa', 'Premium', 'eletronicos', 'Cartas Contempladas', 'Industrias', 'Embarcações']
+  const statuses = ['all', 'novo', 'em_negociacao', 'vendido', 'Ativo']
+  const types = [
+    { value: 'all', label: 'Todos' },
+    { value: 'opportunities', label: 'Oportunidades' },
+    { value: 'products', label: 'Produtos' }
+  ]
 
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6">
@@ -117,7 +164,7 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-sm text-gold-500 font-semibold">
-            {filteredOpportunities?.length || 0} produtos
+            {filteredItems?.length || 0} itens
           </span>
         </div>
       </div>
@@ -139,6 +186,22 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Filter Selects */}
           <div className="flex flex-col sm:flex-row flex-1 gap-4">
+            {/* Type Filter */}
+            <div className="flex-1">
+              <Select value={selectedType} onValueChange={(value: 'all' | 'opportunities' | 'products') => setSelectedType(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {types.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Category Filter */}
             <div className="flex-1">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -211,61 +274,112 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
       {/* Products Section */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <p>Carregando oportunidades...</p>
+          <p>Carregando itens...</p>
         </div>
-      ) : filteredOpportunities.length === 0 ? (
+      ) : filteredItems.length === 0 ? (
         <div className="text-center py-12">
-          <h3 className="text-lg font-medium">Nenhuma oportunidade encontrada</h3>
+          <h3 className="text-lg font-medium">Nenhum item encontrado</h3>
           <p className="text-muted-foreground mt-1">Tente ajustar seus filtros</p>
         </div>
       ) : viewMode === 'grid' ? (
         // Grid View
         <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredOpportunities.map((opp) => (
-            <Card key={opp.id} className="overflow-hidden flex flex-col h-full">
+          {filteredItems.map((item) => (
+            <Card key={item.id} className="overflow-hidden flex flex-col h-full">
               <div className="relative">
-                {/* Product Image Placeholder */}
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-48 flex items-center justify-center">
-                  <span className="text-gray-500">Imagem de {opp.category}</span>
-                </div>
+                {/* Product Image */}
+                {'images' in item && item.images?.length > 0 ? (
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="w-full h-48 object-cover"
+                  />
+                ) : 'photos' in item && item.photos?.length > 0 ? (
+                  <img
+                    src={item.photos[0]}
+                    alt={item.title}
+                    className="w-full h-48 object-cover"
+                  />
+                ) : (
+                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-48 flex items-center justify-center">
+                    <span className="text-gray-500">Sem imagem</span>
+                  </div>
+                )}
 
                 {/* Favorite Button */}
                 <Button
                   variant="ghost"
                   size="icon"
                   className="absolute top-2 right-2 rounded-full bg-white/80 hover:bg-white"
-                  onClick={() => toggleFavorite(opp.id)}
+                  onClick={() => toggleFavorite(item.id)}
                 >
                   <Heart
-                    className={`h-5 w-5 ${favorites.has(opp.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}
+                    className={`h-5 w-5 ${favorites.has(item.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}
                   />
                 </Button>
 
                 {/* Category Badge */}
                 <div className="absolute top-2 left-2">
-                  <Badge variant={opp.status === 'vendido' ? 'secondary' : 'default'}>
-                    {opp.category.toUpperCase()}
+                  <Badge variant={'status' in item && item.status === 'vendido' ? 'secondary' : 'default'}>
+                    {item.category.toUpperCase()}
+                  </Badge>
+                </div>
+
+                {/* Type Badge */}
+                <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+                  <Badge variant="outline" className="text-xs">
+                    {'images' in item ? 'Produto' : 'Oportunidade'}
                   </Badge>
                 </div>
               </div>
 
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg line-clamp-1">{opp.title}</CardTitle>
-                  <Badge variant="outline">{opp.status === 'em_negociacao' ? 'Em negociação' : opp.status.charAt(0).toUpperCase() + opp.status.slice(1)}</Badge>
+                  <div>
+                    <CardTitle className="text-lg line-clamp-1">{item.title}</CardTitle>
+                    {'subtitle' in item && item.subtitle && (
+                      <p className="text-sm text-muted-foreground line-clamp-1">{item.subtitle}</p>
+                    )}
+                  </div>
+                  <Badge variant="outline">
+                    {'status' in item && item.status === 'em_negociacao' ? 'Em negociação' :
+                     'status' in item && item.status === 'active' ? 'Ativo' :
+                     'status' in item ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Novo'}
+                  </Badge>
                 </div>
               </CardHeader>
 
               <CardContent className="flex-1">
                 <div className="text-2xl font-bold mb-2 text-gold-500">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(opp.value))}
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    'price' in item ? item.price : Number(item.value)
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                  {opp.description}
+                  {item.description}
                 </p>
-                {opp.location && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> {opp.location}
+                {'location' in item && item.location && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                    <MapPin className="h-3 w-3" /> {item.location}
+                  </p>
+                )}
+                {'tags' in item && item.tags && item.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {item.tags.slice(0, 3).map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {item.tags.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{item.tags.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+                {'stock' in item && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Estoque: {item.stock}
                   </p>
                 )}
               </CardContent>
@@ -276,7 +390,7 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
                     Ver detalhes
                   </Button>
                   <Button className="flex-1 bg-gold-500 text-white hover:bg-gold-600">
-                    <ShoppingCart className="h-4 w-4 mr-2" /> Comprar
+                    <ShoppingCart className="h-4 w-4 mr-2" /> {'images' in item ? 'Comprar' : 'Negociar'}
                   </Button>
                 </div>
               </CardFooter>
@@ -286,50 +400,95 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
       ) : (
         // List View
         <div className="space-y-4">
-          {filteredOpportunities.map((opp) => (
-            <Card key={opp.id}>
+          {filteredItems.map((item) => (
+            <Card key={item.id}>
               <div className="flex gap-6 p-4">
-                {/* Product Image Placeholder */}
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32 flex-shrink-0 flex items-center justify-center">
-                  <span className="text-gray-500 text-xs">Imagem</span>
-                </div>
+                {/* Product Image */}
+                {'images' in item && item.images?.length > 0 ? (
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="w-32 h-32 object-cover rounded-lg flex-shrink-0"
+                  />
+                ) : 'photos' in item && item.photos?.length > 0 ? (
+                  <img
+                    src={item.photos[0]}
+                    alt={item.title}
+                    className="w-32 h-32 object-cover rounded-lg flex-shrink-0"
+                  />
+                ) : (
+                  <div className="bg-gray-200 border-2 border-dashed rounded-lg w-32 h-32 flex-shrink-0 flex items-center justify-center">
+                    <span className="text-gray-500 text-xs">Sem imagem</span>
+                  </div>
+                )}
 
                 <div className="flex-1">
                   <div className="flex justify-between">
-                    <CardTitle className="text-xl">{opp.title}</CardTitle>
+                    <div>
+                      <CardTitle className="text-xl">{item.title}</CardTitle>
+                      {'subtitle' in item && item.subtitle && (
+                        <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => toggleFavorite(opp.id)}
+                        onClick={() => toggleFavorite(item.id)}
                       >
                         <Heart
-                          className={`h-5 w-5 ${favorites.has(opp.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}
+                          className={`h-5 w-5 ${favorites.has(item.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`}
                         />
                       </Button>
-                      <Badge variant={opp.status === 'vendido' ? 'secondary' : 'default'}>
-                        {opp.category.toUpperCase()}
+                      <Badge variant={'status' in item && item.status === 'vendido' ? 'secondary' : 'default'}>
+                        {item.category.toUpperCase()}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {'images' in item ? 'Produto' : 'Oportunidade'}
                       </Badge>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 mt-2">
-                    <div className="text-2xl font-bold">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(opp.value))}
+                    <div className="text-2xl font-bold text-gold-500">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                        'price' in item ? item.price : Number(item.value)
+                      )}
                     </div>
                     <Badge variant="outline">
-                      {opp.status === 'em_negociacao' ? 'Em negociação' : opp.status.charAt(0).toUpperCase() + opp.status.slice(1)}
+                      {'status' in item && item.status === 'em_negociacao' ? 'Em negociação' :
+                       'status' in item && item.status === 'active' ? 'Ativo' :
+                       'status' in item ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Novo'}
                     </Badge>
                   </div>
 
                   <p className="text-muted-foreground mt-2 line-clamp-2">
-                    {opp.description}
+                    {item.description}
                   </p>
 
                   <div className="flex items-center gap-4 mt-3">
-                    {opp.location && (
+                    {'location' in item && item.location && (
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-4 w-4" /> {opp.location}
+                        <MapPin className="h-4 w-4" /> {item.location}
+                      </p>
+                    )}
+                    {'tags' in item && item.tags && item.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {item.tags.slice(0, 3).map((tag, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {item.tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{item.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    {'stock' in item && (
+                      <p className="text-sm text-muted-foreground">
+                        Estoque: {item.stock}
                       </p>
                     )}
                     <div className="flex items-center">
@@ -344,8 +503,8 @@ export default function OpportunitiesStore({ initialOpportunities }: { initialOp
                     <Button variant="outline">
                       Ver detalhes
                     </Button>
-                    <Button>
-                      <ShoppingCart className="h-4 w-4 mr-2" /> Comprar
+                    <Button className="bg-gold-500 text-white hover:bg-gold-600">
+                      <ShoppingCart className="h-4 w-4 mr-2" /> {'images' in item ? 'Comprar' : 'Negociar'}
                     </Button>
                   </div>
                 </div>
