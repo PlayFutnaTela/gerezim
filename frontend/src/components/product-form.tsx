@@ -11,6 +11,7 @@ type Product = {
   price: number
   category: string
   status: string
+  type: string
   tags: string[]
   stock: number
   images: string[]
@@ -53,6 +54,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
   const [status, setStatus] = useState('draft')
   const [tags, setTags] = useState('')
   const [stock, setStock] = useState<number | ''>('')
+  const [type, setType] = useState('produto')
 
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
@@ -72,6 +74,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setTags(product.tags.join(', '))
       setStock(product.stock)
       setExistingImages(product.images)
+      setType((product as any).type || 'produto')
     } else {
       // Reset for new product
       setTitle('')
@@ -82,6 +85,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setStatus('draft')
       setTags('')
       setStock('')
+      setType('produto')
       setExistingImages([])
       setFiles([])
       setPreviews([])
@@ -119,6 +123,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         price: Number(price || 0),
         category,
         status,
+        type,
         tags: tags ? tags.split(',').map(t => t.trim()) : [],
         stock: Number(stock || 0),
         images: []
@@ -253,10 +258,17 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         <textarea value={description} onChange={e=>setDescription(e.target.value)} className="w-full border rounded px-3 py-2 mt-1 min-h-[120px]" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
         <div>
           <label className="text-sm font-medium">Preço (BRL)</label>
           <input type="number" step="0.01" value={price} onChange={e=>setPrice(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
+        </div>
+        <div>
+          <label className="text-sm font-medium">Tipo</label>
+          <select value={type} onChange={e=>setType(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
+            <option value="produto">Produto</option>
+            <option value="oportunidade">Oportunidade</option>
+          </select>
         </div>
         {/* SKU removed - no longer collected */}
         <div>

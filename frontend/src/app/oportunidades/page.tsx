@@ -23,6 +23,7 @@ type Product = {
   price: number
   category: string
   status: string
+  type?: string
   tags?: string[]
   stock: number
   images: string[]

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, MessageCircle, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MessageCircle, MapPin, ArrowLeft } from 'lucide-react'
 
 type Item = {
   id: string
@@ -48,9 +48,25 @@ export default function ProductDetail({ item, isProduct }: Props) {
     window.open(whatsappUrl, '_blank')
   }
 
+  const handleBack = () => {
+    window.history.back()
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-navy-500">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
+        {/* Back Button */}
+        <div className="mb-4">
+          <Button
+            onClick={handleBack}
+            variant="ghost"
+            className="text-white hover:text-gray-200"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </div>
+
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Image Carousel */}
           <div className="relative h-96 bg-gray-100">
@@ -159,10 +175,10 @@ export default function ProductDetail({ item, isProduct }: Props) {
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{item.description}</p>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 justify-center">
               <Button
                 onClick={handleWhatsApp}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 text-lg"
+                className="w-4/5 bg-green-600 hover:bg-green-700 text-white py-3 text-lg"
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 Saiba Mais

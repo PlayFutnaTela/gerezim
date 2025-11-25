@@ -42,6 +42,7 @@ type Product = {
   price: number
   category: string
   status: string
+  type?: string
   tags?: string[]
   stock: number
   images: string[]
@@ -75,9 +76,9 @@ export default function OpportunitiesStore({
     if (selectedType === 'all') {
       result = [...opportunities, ...products]
     } else if (selectedType === 'opportunities') {
-      result = [...opportunities]
+      result = [...opportunities, ...products.filter(p => p.type === 'oportunidade')]
     } else if (selectedType === 'products') {
-      result = [...products]
+      result = [...products.filter(p => p.type === 'produto' || !p.type)]
     }
 
     // Apply search filter
