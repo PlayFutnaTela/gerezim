@@ -1,5 +1,6 @@
 import React from "react"
 import { User as UserIcon } from "lucide-react"
+import ChangePasswordModal from "./change-password-modal"
 
 export default function Topbar({ user }: { user: any }) {
   const name = user?.user_metadata?.full_name || user?.email || "Usuário"
@@ -18,6 +19,7 @@ export default function Topbar({ user }: { user: any }) {
       </div>
 
       <div className="flex items-center gap-3">
+        <ChangePasswordModal />
         <form action="/auth/signout" method="post">
           <button type="submit" className="text-white text-sm hover:text-white/80">
             Sair

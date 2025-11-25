@@ -109,6 +109,7 @@ export interface Database {
           subtitle: string | null
           description: string | null
           price: number
+          commission_percent: number | null
           category: string
           status: string
           tags: string[]
@@ -122,6 +123,7 @@ export interface Database {
           subtitle?: string | null
           description?: string | null
           price: number
+          commission_percent?: number | null
           category: string
           status?: string
           tags?: string[]
@@ -135,6 +137,7 @@ export interface Database {
           subtitle?: string | null
           description?: string | null
           price?: number
+          commission_percent?: number | null
           category?: string
           status?: string
           tags?: string[]

@@ -9,6 +9,7 @@ type Product = {
   subtitle?: string
   description?: string
   price: number
+  commission_percent?: number
   category: string
   status: string
   type: string
@@ -54,6 +55,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
   const [status, setStatus] = useState('draft')
   const [tags, setTags] = useState('')
   const [stock, setStock] = useState<number | ''>('')
+  const [commission, setCommission] = useState('0')
   const [type, setType] = useState('produto')
 
   const [files, setFiles] = useState<File[]>([])
@@ -75,6 +77,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setStock(product.stock)
       setExistingImages(product.images)
       setType((product as any).type || 'produto')
+      setCommission(((product as any).commission_percent ?? 0).toString())
     } else {
       // Reset for new product
       setTitle('')
@@ -86,6 +89,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setTags('')
       setStock('')
       setType('produto')
+      setCommission('0')
       setExistingImages([])
       setFiles([])
       setPreviews([])
@@ -126,6 +130,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         type,
         tags: tags ? tags.split(',').map(t => t.trim()) : [],
         stock: Number(stock || 0),
+        commission_percent: Number(commission || 0),
         images: []
       }
 
@@ -209,6 +214,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         setFiles([])
         setPreviews([])
         setExistingImages([])
+        setCommission('0')
       }
 
       setLoading(false)
@@ -288,6 +294,18 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
             <option value="inactive">Inativo</option>
             <option value="archived">Arquivado</option>
           </select>
+        </div>
+        <div>
+          <label className="text-sm font-medium">% Comissão</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            max="100"
+            value={commission}
+            onChange={e => setCommission(e.target.value)}
+            className="w-full border rounded px-3 py-2 mt-1"
+          />
         </div>
       </div>
 

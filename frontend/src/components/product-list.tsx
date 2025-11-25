@@ -11,6 +11,7 @@ type Product = {
   subtitle?: string
   description?: string
   price: number
+  commission_percent?: number
   category: string
   status: string
   tags: string[]

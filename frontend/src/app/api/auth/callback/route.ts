@@ -9,8 +9,10 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = createClient()
+    console.log('Tentando trocar código por sessão')
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      console.log('Sessão criada com sucesso')
       const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === 'development'
       if (isLocalEnv) {
@@ -21,9 +23,12 @@ export async function GET(request: NextRequest) {
       } else {
         return NextResponse.redirect(`${origin}${next}`)
       }
+    } else {
+      console.error('Erro ao trocar código por sessão:', error.message)
     }
   }
 
   // return the user to an error page with instructions
+  console.log('Falha na autenticação, redirecionando para login')
   return NextResponse.redirect(`${origin}/login?message=Could not authenticate user`)
 }

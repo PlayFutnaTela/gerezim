@@ -1,20 +1,35 @@
+"use client"
+
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/client"
 import { redirect } from "next/navigation"
+import { toast } from 'sonner'
 
-export default async function LoginPage({
+export default function LoginPage({
   searchParams,
 }: {
   searchParams: { message: string; forgot?: string }
 }) {
-  const signIn = async (formData: FormData) => {
-    "use server"
+  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
 
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
+  const signIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    if (!email || !password) {
+      toast.error('Preencha todos os campos')
+      setLoading(false)
+      return
+    }
+
+    console.log('Tentando login com email:', email)
     const supabase = createClient()
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -23,49 +38,78 @@ export default async function LoginPage({
     })
 
     if (error) {
-      return redirect("/login?message=Não foi possível autenticar o usuário")
+      console.error('Erro no login:', error.message)
+      toast.error('Email ou senha incorretos')
+    } else {
+      console.log('Login bem-sucedido para:', email)
+      toast.success('Login realizado com sucesso!')
+      window.location.href = '/dashboard'
     }
-
-    return redirect("/dashboard")
+    setLoading(false)
   }
 
-  const signUp = async (formData: FormData) => {
-    "use server"
+  const signUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
 
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
+    if (!email || !password) {
+      toast.error('Preencha todos os campos')
+      setLoading(false)
+      return
+    }
+
+    if (password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres')
+      setLoading(false)
+      return
+    }
+
+    console.log('Tentando cadastro com email:', email)
     const supabase = createClient()
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
       },
     })
 
     if (error) {
-      return redirect("/login?message=Não foi possível criar a conta")
+      console.error('Erro no cadastro:', error.message)
+      toast.error('Erro ao criar conta: ' + error.message)
+    } else {
+      console.log('Cadastro iniciado para:', email)
+      toast.success('Verifique o email para confirmar o cadastro')
     }
-
-    return redirect("/login?message=Verifique o email para continuar o processo de cadastro")
+    setLoading(false)
   }
 
-  const forgotPassword = async (formData: FormData) => {
-    "use server"
+  const forgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
 
-    const email = formData.get("email") as string
+    if (!email) {
+      toast.error('Digite seu email')
+      setLoading(false)
+      return
+    }
+
+    console.log('Tentando recuperação de senha para:', email)
     const supabase = createClient()
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
+      redirectTo: `${window.location.origin}/api/auth/callback`,
     })
 
     if (error) {
-      return redirect("/login?message=Não foi possível enviar o email de recuperação")
+      console.error('Erro na recuperação de senha:', error.message)
+      toast.error('Erro ao enviar email de recuperação')
+    } else {
+      console.log('Email de recuperação enviado para:', email)
+      toast.success('Email de recuperação enviado. Verifique sua caixa de entrada.')
     }
-
-    return redirect("/login?message=Email de recuperação enviado. Verifique sua caixa de entrada.")
+    setLoading(false)
   }
 
   // Check if we're showing the forgot password form
@@ -93,26 +137,51 @@ export default async function LoginPage({
         </CardHeader>
         <CardContent>
           {showForgotPassword ? (
-            <form action={forgotPassword} className="grid gap-4">
+            <form onSubmit={forgotPassword} className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
               {searchParams?.message && (
                 <p className="text-sm text-red-500">{searchParams.message}</p>
               )}
-              <Button className="w-full" type="submit">Enviar Instruções</Button>
-              <Button className="w-full" variant="outline" type="button" onClick={() => window.history.back()}>Voltar</Button>
+              <Button className="w-full" type="submit" disabled={loading}>
+                {loading ? 'Enviando...' : 'Enviar Instruções'}
+              </Button>
+              <Button className="w-full" variant="outline" type="button" onClick={() => window.location.href = '/login'}>Voltar</Button>
             </form>
           ) : (
-            <form action={signIn} className="grid gap-4">
+            <form onSubmit={signIn} className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" name="password" type="password" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
               <div className="text-center text-sm">
                 <a href="/login?forgot=true" className="text-blue-600 hover:underline">Esqueceu sua senha?</a>
@@ -120,8 +189,12 @@ export default async function LoginPage({
               {searchParams?.message && (
                 <p className="text-sm text-red-500">{searchParams.message}</p>
               )}
-              <Button className="w-full" type="submit">Entrar</Button>
-              <Button className="w-full" variant="outline" formAction={signUp}>Criar Conta</Button>
+              <Button className="w-full" type="submit" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
+              </Button>
+              <Button className="w-full" variant="outline" type="button" onClick={signUp} disabled={loading}>
+                {loading ? 'Criando...' : 'Criar Conta'}
+              </Button>
             </form>
           )}
         </CardContent>

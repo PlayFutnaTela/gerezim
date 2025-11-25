@@ -33,7 +33,6 @@ export default async function ProdutosPage() {
           <ProductList products={products || []} />
 
           {/* Product form is client-side (handles uploads directly) */}
-          {/* @ts-expect-error Server -> Client */}
           <ProductForm initialSession={session} />
         </div>
       </div>
