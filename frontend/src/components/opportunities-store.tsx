@@ -177,7 +177,7 @@ export default function OpportunitiesStore({
                 <TextRotate
                   texts={["Negócios exclusivos", "Oportunidades únicas", "Produtos Premium"]}
                   splitBy="words"
-                  // keep the same visual size/position; TextRotate will inherit styles from this parent p
+                  // keep the same visual size/position; TextRotate will inherit styles from this parent div
                   animate={{ y: 0, opacity: 1 }}
                   initial={{ y: '100%', opacity: 0 }}
                   exit={{ y: '-120%', opacity: 0 }}
