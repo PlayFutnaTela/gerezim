@@ -29,11 +29,11 @@ export default async function ProdutosPage() {
         <p className="text-muted-foreground mt-1">Gerencie os produtos: cadastro, imagens e estoque.</p>
 
         <div className="mt-6 space-y-8">
+          {/* Product form is client-side (handles uploads directly) - moved above the list */}
+          <ProductForm initialSession={session} />
+
           {/* Product list */}
           <ProductList products={products || []} />
-
-          {/* Product form is client-side (handles uploads directly) */}
-          <ProductForm initialSession={session} />
         </div>
       </div>
     </div>
