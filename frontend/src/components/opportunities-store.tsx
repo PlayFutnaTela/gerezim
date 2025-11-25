@@ -18,6 +18,7 @@ import {
   Grid3X3,
   List
 } from 'lucide-react'
+import FooterSlider from './footer-slider'
 
 // Type for opportunity data
 type Opportunity = {
@@ -545,9 +546,7 @@ export default function OpportunitiesStore({
 
       {/* Footer Section */}
       <Separator className="my-8" />
-      <div className="text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} Gerezim Intermediações. Todos os direitos reservados.
-      </div>
+      <FooterSlider />
     </div>
   )
 }
