@@ -9,7 +9,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from 'sonner'
 import { Key } from 'lucide-react'
 
-export default function ChangePasswordModal() {
+interface ChangePasswordModalProps {
+  trigger?: React.ReactNode
+}
+
+export default function ChangePasswordModal({ trigger }: ChangePasswordModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -67,10 +71,12 @@ export default function ChangePasswordModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-white hover:text-white/80">
-          <Key className="h-4 w-4 mr-2" />
-          Alterar Senha
-        </Button>
+        {trigger ? trigger : (
+          <Button variant="ghost" size="sm" className="text-white hover:text-white/80">
+            <Key className="h-4 w-4 mr-2" />
+            Alterar Senha
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

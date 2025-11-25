@@ -89,9 +89,13 @@ export default function ProfilePage() {
                                 Recomendamos alterar sua senha periodicamente para manter sua conta segura.
                             </p>
                             <div className="flex justify-start">
-                                <div className="[&>button]:bg-white [&>button]:text-blue-700 [&>button]:border [&>button]:border-blue-200 [&>button]:hover:bg-blue-50 [&>button]:shadow-sm">
-                                    <ChangePasswordModal />
-                                </div>
+                                <ChangePasswordModal
+                                    trigger={
+                                        <Button variant="outline" className="text-blue-700 border-blue-200 hover:bg-blue-50 hover:text-blue-800">
+                                            Alterar Senha
+                                        </Button>
+                                    }
+                                />
                             </div>
                         </div>
                     </CardContent>

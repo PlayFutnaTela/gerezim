@@ -20,28 +20,43 @@ export default function NewContactPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const name = formData.get('name') as string
-    const phone = formData.get('phone') as string
-    const source = formData.get('source') as string
-    const interests = formData.get('interests') as string
-    const status = formData.get('status') as any
+    const name = (formData.get('name') as string || '').trim()
+    const phone = (formData.get('phone') as string || '').trim()
+    const source = (formData.get('source') as string || '').trim()
+    const interests = (formData.get('interests') as string || '').trim()
+    const status = (formData.get('status') as string || 'novo')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      console.error('Usuário não autenticado. Redirecionando para login.')
+      toast.error('Você precisa estar logado para criar contatos')
+      router.push('/login')
+      setLoading(false)
+      return
+    }
 
-    const { error } = await supabase.from('contacts').insert({
+    // Basic validation
+    if (!name) {
+      toast.error('Nome é obrigatório')
+      setLoading(false)
+      return
+    }
+
+    const { data, error } = await supabase.from('contacts').insert({
       user_id: user.id,
       name,
       phone,
       source,
       interests,
       status
-    })
+    }).select('id').single()
 
     if (error) {
-      toast.error("Erro ao criar contato")
+      console.error('Erro ao inserir contato:', error)
+      toast.error('Erro ao criar contato: ' + (error.message || 'verifique o console'))
     } else {
-      toast.success("Contato criado!")
+      console.log('Contato criado com sucesso', data)
+      toast.success('Contato criado!')
       router.push('/contatos')
       router.refresh()
     }

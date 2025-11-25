@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { LayoutDashboard, Briefcase, Users, KanbanSquare, BarChart3, LogOut, ShoppingCart } from "lucide-react"
+import { LayoutDashboard, Briefcase, Users, KanbanSquare, BarChart3, LogOut, ShoppingCart, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import Image from "next/image"
@@ -63,7 +63,7 @@ export default function Sidebar() {
             href="/perfil"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-white/70 transition-all hover:text-white hover:bg-navy-600"
           >
-            <Users className="h-4 w-4 text-gold-300" />
+            <User className="h-4 w-4 text-gold-300" />
             Perfil
           </Link>
         </nav>

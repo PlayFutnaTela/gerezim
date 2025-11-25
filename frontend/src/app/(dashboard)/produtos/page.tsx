@@ -12,14 +12,22 @@ export default async function ProdutosPage() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!user) redirect('/login')
 
-  // Fetch existing products
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false })
+  // Fetch existing products — select only needed columns and limit to reduce payload
+  let products = []
+  try {
+    const { data: prodData, error: prodError } = await supabase
+      .from('products')
+      .select('id, title, subtitle, price, category, status, tags, stock, images, created_at, commission_percent, type')
+      .order('created_at', { ascending: false })
+      .limit(500)
 
-  if (error) {
-    console.error('Error fetching products:', error)
+    if (prodError) {
+      console.error('Error fetching products:', prodError)
+    } else {
+      products = prodData || []
+    }
+  } catch (err) {
+    console.error('Unexpected error fetching products:', err)
   }
 
   return (
