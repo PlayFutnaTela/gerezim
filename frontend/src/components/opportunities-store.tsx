@@ -19,6 +19,7 @@ import {
   List
 } from 'lucide-react'
 import FooterSlider from './footer-slider'
+import ImageHeroCarousel from './image-hero-carousel'
 
 // Type for opportunity data
 type Opportunity = {
@@ -177,14 +178,10 @@ export default function OpportunitiesStore({
           </div>
         </div>
 
-        {/* Banner */}
+        {/* Banner/carrossel de destaque */}
         <div className="w-full flex justify-center mt-8">
           <div className="w-full max-w-6xl">
-            <img
-              src="/slide-desktop/1.png"
-              alt="Banner"
-              className="w-full h-auto rounded-xl shadow-lg"
-            />
+            <ImageHeroCarousel interval={10000} />
           </div>
         </div>
       </div>
