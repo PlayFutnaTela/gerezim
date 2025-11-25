@@ -25,8 +25,8 @@ export default function ImageHeroCarousel({ interval = 10000 }: { interval?: num
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-6xl relative rounded-xl overflow-hidden shadow-lg bg-gray-100">
-        <div className="w-full h-44 sm:h-56 md:h-64 lg:h-72 xl:h-80 relative flex items-center justify-center bg-gray-100">
+      <div className="w-full max-w-6xl relative rounded-xl overflow-hidden shadow-lg bg-gold-50">
+        <div className="w-full h-44 sm:h-56 md:h-64 lg:h-72 xl:h-80 relative flex items-center justify-center bg-gold-50">
           <AnimatePresence initial={false} mode="wait">
             <motion.img
               key={slides[index]}
@@ -42,24 +42,24 @@ export default function ImageHeroCarousel({ interval = 10000 }: { interval?: num
         </div>
 
         {/* Controls */}
-        <button
+          <button
           onClick={prev}
           aria-label="Prev slide"
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2.5 shadow transition"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2.5 shadow transition text-gold-500"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        <button
+          <button
           onClick={next}
           aria-label="Next slide"
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2.5 shadow transition"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2.5 shadow transition text-gold-500"
         >
           <ChevronRight className="w-5 h-5" />
         </button>
 
         {/* Indicators */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2.5 bg-black/25 backdrop-blur-sm px-3 py-1.5 rounded-full">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2.5 bg-gold-300/30 backdrop-blur-sm px-3 py-1.5 rounded-full">
           {slides.map((_, i) => (
             <button
               key={i}
