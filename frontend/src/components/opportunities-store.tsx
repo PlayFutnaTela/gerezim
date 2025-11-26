@@ -169,9 +169,15 @@ export default function OpportunitiesStore({
       {/* Header Section */}
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-[5px]">
             <div className="flex-shrink-0 flex items-center justify-center">
-              <img src="/logo.png" alt="Gerezim logo" className="h-5 sm:h-6 md:h-7 lg:h-8 object-contain" style={{ height: 'auto' }} />
+              {/* Reduce logo scale by ~60%: width 40% of the container, capped for very large screens */}
+              <img
+                src="/logo.png"
+                alt="Gerezim logo"
+                className="object-contain"
+                style={{ width: '80px', maxWidth: '240px', height: 'auto' }}
+              />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gerezim</h1>
