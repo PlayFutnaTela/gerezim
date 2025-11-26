@@ -16,7 +16,8 @@ import {
   Star,
   ShoppingCart,
   Grid3X3,
-  List
+  List,
+  User
 } from 'lucide-react'
 
 import { TextRotate } from '@/style/efect-hover-text'
@@ -54,12 +55,20 @@ type Product = {
   created_at: string
 }
 
+// Type for user profile
+type UserProfile = {
+  avatar_url: string | null
+  full_name: string | null
+}
+
 export default function OpportunitiesStore({
   initialOpportunities,
-  initialProducts
+  initialProducts,
+  userProfile
 }: {
   initialOpportunities: Opportunity[]
   initialProducts: Product[]
+  userProfile: UserProfile | null
 }) {
   const [opportunities, setOpportunities] = useState<Opportunity[]>(initialOpportunities || [])
   const [products, setProducts] = useState<Product[]>(initialProducts || [])
@@ -194,7 +203,26 @@ export default function OpportunitiesStore({
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-4 flex-shrink-0">
+            {/* User Avatar */}
+            <Link
+              href="/perfil"
+              className="relative w-12 h-12 rounded-full border border-gold-500 shadow-md shadow-gold-400/50 overflow-hidden transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-gold-500/60 cursor-pointer"
+            >
+              {userProfile?.avatar_url ? (
+                <img
+                  src={userProfile.avatar_url}
+                  alt={userProfile.full_name || 'User'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+              )}
+            </Link>
+
+            {/* Item count */}
             <span className="text-sm text-gold-500 font-semibold">
               {filteredItems?.length || 0} itens
             </span>

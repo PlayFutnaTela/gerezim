@@ -35,6 +35,22 @@ type Product = {
 export default async function OpportunitiesPage() {
   const supabase = createClient()
 
+  // Fetch user profile for avatar
+  let userProfile = null
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url, full_name')
+        .eq('id', user.id)
+        .single()
+      userProfile = data
+    }
+  } catch (error) {
+    console.error('Error fetching user profile:', error)
+  }
+
   const [opportunitiesResponse, productsResponse] = await Promise.all([
     supabase
       .from('opportunities')
@@ -67,6 +83,7 @@ export default async function OpportunitiesPage() {
     <OpportunitiesStore
       initialOpportunities={opportunities}
       initialProducts={products}
+      userProfile={userProfile}
     />
   )
 }
