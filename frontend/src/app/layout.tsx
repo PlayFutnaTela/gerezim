@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 const playfair = Playfair_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Gerezim Intermediações",
+    title: "Gerezim",
     description: "Plataforma de gestão de negócios",
     icons: {
         icon: '/logo-icon.ico',

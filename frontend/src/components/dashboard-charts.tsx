@@ -7,8 +7,8 @@ import {
   PieChart, 
   Pie, 
   Cell, 
-  AreaChart, 
-  Area, 
+  LineChart,
+  Line,
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -54,130 +54,90 @@ const COLORS = {
 };
 
 interface DashboardChartsProps {
-  opportunityData: OpportunityData[];
-  statusData: StatusData[];
-  timelineData: TimelineData[];
+  opportunityData: OpportunityData[]; // category,count,value
+  topProducts: { name: string; price: number }[]; // top 5 products
+  timelineData: TimelineData[]; // month, opportunities, value (revenue)
   pipelineData: PipelineData[];
 }
 
 export default function DashboardCharts({ 
-  opportunityData, 
-  statusData, 
+  opportunityData,
+  topProducts,
   timelineData, 
   pipelineData 
 }: DashboardChartsProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-      {/* Gráfico de barras - Oportunidades por categoria */}
+      {/* Gráfico de pizza - Oportunidades por categoria */}
       <div className="bg-white p-6 rounded-lg border">
         <h3 className="text-lg font-semibold mb-4">Oportunidades por Categoria</h3>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={opportunityData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="category" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '0.5rem'
-                }} 
-              />
-              <Legend />
-              <Bar
-                dataKey="count"
-                name="Quantidade"
-                fill={COLORS.primary}
-                radius={[4, 4, 0, 0]}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Gráfico de pizza - Status das oportunidades */}
-      <div className="bg-white p-6 rounded-lg border">
-        <h3 className="text-lg font-semibold mb-4">Status das Oportunidades</h3>
-        <div className="h-80">
+        <div className="h-80 flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={statusData}
+                data={opportunityData}
+                dataKey="count"
+                nameKey="category"
                 cx="50%"
                 cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
+                outerRadius={100}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
-                {statusData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={
-                      index === 0 ? COLORS.primary :
-                      index === 1 ? COLORS.secondary :
-                      COLORS.accent
-                    }
-                    animationDuration={1000}
-                  />
+                {opportunityData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={
+                    index === 0 ? COLORS.primary :
+                    index === 1 ? COLORS.secondary :
+                    index === 2 ? COLORS.accent : COLORS.muted
+                  } />
                 ))}
               </Pie>
-              <Tooltip 
-                formatter={(value) => [`${value} oportunidades`, 'Quantidade']}
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '0.5rem'
-                }} 
-              />
+              <Tooltip formatter={(value) => [`${value} oportunidades`, 'Quantidade']} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Gráfico de área - Evolução de oportunidades */}
+      {/* Top 5 produtos mais caros */}
       <div className="bg-white p-6 rounded-lg border">
-        <h3 className="text-lg font-semibold mb-4">Evolução de Oportunidades</h3>
+        <h3 className="text-lg font-semibold mb-4">Top 5 produtos mais caros</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={timelineData}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            <BarChart
+              data={topProducts}
+              layout="vertical"
+              margin={{ top: 20, right: 30, left: 80, bottom: 5 }}
             >
-              <defs>
-                <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0.1}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="month" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" />
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis type="number" stroke="#6B7280" tickFormatter={(val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(val))} />
+              <YAxis type="category" dataKey="name" stroke="#6B7280" width={180} />
               <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '0.5rem'
-                }} 
+                formatter={(value) => [new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value)), 'Preço']} 
+                contentStyle={{ backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '0.5rem' }}
               />
-              <Area
-                type="monotone"
-                dataKey="opportunities"
-                stroke={COLORS.primary}
-                fillOpacity={1}
-                fill="url(#colorUv)"
-                name="Oportunidades"
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
-            </AreaChart>
+              <Bar dataKey="price" name="Preço" fill={COLORS.primaryDark} radius={[4, 4, 4, 4]}>
+                {topProducts.map((entry, index) => (
+                  <Cell key={`cell-price-${index}`} fill={index % 2 === 0 ? COLORS.primary : COLORS.secondary} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Gráfico de linhas - Evolução no Faturamento */}
+      <div className="bg-white p-6 rounded-lg border">
+        <h3 className="text-lg font-semibold mb-4">Evolução no Faturamento</h3>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={timelineData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <XAxis dataKey="month" stroke="#6B7280" />
+              <YAxis stroke="#6B7280" tickFormatter={(v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '0.5rem' }} formatter={(v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v))} />
+              <Legend />
+              <Line type="monotone" dataKey="value" stroke={COLORS.primary} strokeWidth={2.5} dot={{ r: 4, fill: COLORS.primaryDark }} activeDot={{ r: 6 }} name="Faturamento" />
+              <Line type="monotone" dataKey="opportunities" stroke={COLORS.secondary} strokeWidth={1.6} dot={false} name="Oportunidades" />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>

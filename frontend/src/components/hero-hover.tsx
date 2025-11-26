@@ -15,7 +15,7 @@ export default function HeroHover() {
         />
       </h1>
       <p className="text-lg text-gray-600 text-center max-w-2xl">
-        Descubra, negocie e realize grandes negócios com a Gerezim Intermediações.
+        Descubra, negocie e realize grandes negócios com a Gerezim.
       </p>
     </section>
   )
