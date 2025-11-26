@@ -22,6 +22,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing productId or files' }, { status: 400 })
     }
 
+    // enforce server-side maximum to avoid more than 30 images per product
+    const { data: productData, error: prodErr } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single()
+
+    if (prodErr) {
+      console.warn('Could not fetch product images for limit check', prodErr.message)
+    }
+
+    const existingCount = productData?.images?.length || 0
+    const MAX_FILES = 30
+    if (existingCount + files.length > MAX_FILES) {
+      return NextResponse.json({ error: `Upload would exceed maximum (${MAX_FILES}) images for this product. Existing: ${existingCount}, trying to add: ${files.length}` }, { status: 400 })
+    }
+
     const uploadedPaths: string[] = []
 
     for (const file of files) {

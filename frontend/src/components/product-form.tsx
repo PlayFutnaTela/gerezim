@@ -28,7 +28,7 @@ type Props = {
 }
 
 const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const MAX_FILES = 15
+const MAX_FILES = 30
 const MAX_FILE_MB = 15
 
 // Available categories from the opportunities search system
@@ -99,9 +99,9 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
   function addFiles(list: FileList | null) {
     if (!list) return
     const arr = Array.from(list)
-    // checks
-    if (files.length + arr.length > MAX_FILES) {
-      setError(`Máximo ${MAX_FILES} imagens`) ; return
+    // checks — consider already existing images plus new pending files
+    if ((existingImages.length || 0) + files.length + arr.length > MAX_FILES) {
+      setError(`Máximo ${MAX_FILES} imagens no total`) ; return
     }
     for (const f of arr) {
       if (!SUPPORTED_TYPES.includes(f.type)) { setError('Formato não permitido'); return }

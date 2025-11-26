@@ -31,7 +31,7 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
 
   // Calculate total value in negotiation (simplified)
   // Load opportunities fields in the selected range for charts
-  const oppSelect = supabase.from('opportunities').select('value, status, category, created_at, pipeline_stage')
+  const oppSelect = supabase.from('opportunities').select('value, status, category, created_at, pipeline_stage, closed_date')
   if (startDate) oppSelect.gte('created_at', startDate.toISOString())
   const { data: opportunities } = await oppSelect
   const totalValue = opportunities?.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0) || 0
@@ -54,7 +54,17 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
     }
   })
 
-  // Status counts are not used directly as we will display top products instead.
+  // Calculate Average Value by Category
+  const avgValueByCategoryData = Array.from(categoriesSet).map(category => {
+    const categoryOpps = (opportunities || []).filter(opp => opp.category === category)
+    if (categoryOpps.length === 0) return { category: category === 'item_premium' ? 'Item Premium' : category.charAt(0).toUpperCase() + category.slice(1), avgValue: 0 }
+    const totalValue = categoryOpps.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0)
+    const avgValue = totalValue / categoryOpps.length
+    return {
+      category: category === 'item_premium' ? 'Item Premium' : category.charAt(0).toUpperCase() + category.slice(1),
+      avgValue: avgValue
+    }
+  }).filter(item => item.avgValue > 0)
 
   // Timeline (compute months based on selected range)
   // reuse the `now` already declared earlier above
@@ -102,7 +112,7 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
   }).reverse();
 
   // Pipeline de vendas
-  const { data: pipelineOpportunities } = await supabase.from('opportunities').select('pipeline_stage').gte(startDate ? 'created_at' : 'created_at', startDate ? startDate.toISOString() : '1970-01-01T00:00:00Z')
+  const { data: pipelineOpportunities } = await supabase.from('opportunities').select('pipeline_stage, status').gte(startDate ? 'created_at' : 'created_at', startDate ? startDate.toISOString() : '1970-01-01T00:00:00Z')
   const pipelineCounts: Record<string, number> = {
     'Novo': 0,
     'Interessado': 0,
@@ -122,6 +132,42 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
     value: count
   })).filter(item => item.value > 0); // Apenas estágios com valores
 
+  // Calculate Conversion Rate by Stage
+  const allOpportunities = pipelineOpportunities || []
+  const totalNew = allOpportunities.filter(opp => opp.pipeline_stage === 'Novo').length
+  const totalInterested = allOpportunities.filter(opp => opp.pipeline_stage === 'Interessado').length
+  const totalProposal = allOpportunities.filter(opp => opp.pipeline_stage === 'Proposta enviada').length
+  const totalNegotiation = allOpportunities.filter(opp => opp.pipeline_stage === 'Negociação').length
+  const totalClosed = allOpportunities.filter(opp => opp.pipeline_stage === 'Finalizado').length
+
+  const conversionRateData = [
+    { stage: 'Novo → Interessado', conversionRate: totalNew > 0 ? (totalInterested / totalNew) * 100 : 0 },
+    { stage: 'Interessado → Proposta', conversionRate: totalInterested > 0 ? (totalProposal / totalInterested) * 100 : 0 },
+    { stage: 'Proposta → Negociação', conversionRate: totalProposal > 0 ? (totalNegotiation / totalProposal) * 100 : 0 },
+    { stage: 'Negociação → Finalizado', conversionRate: totalNegotiation > 0 ? (totalClosed / totalNegotiation) * 100 : 0 }
+  ].filter(item => item.conversionRate > 0)
+
+  // Calculate Value Distribution
+  const valueRanges = [
+    { min: 0, max: 5000, label: 'R$ 0 - 5.000' },
+    { min: 5001, max: 25000, label: 'R$ 5.001 - 25.000' },
+    { min: 25001, max: 50000, label: 'R$ 25.001 - 50.000' },
+    { min: 50001, max: 100000, label: 'R$ 50.001 - 100.000' },
+    { min: 100001, max: Infinity, label: 'R$ 100.001+' }
+  ]
+
+  const valueDistributionData = valueRanges.map(range => {
+    const count = (opportunities || []).filter(opp => {
+      const value = Number(opp.value) || 0
+      return value >= range.min && (range.max === Infinity ? value <= 10000000 : value <= range.max)
+    }).length
+
+    return {
+      range: range.label,
+      count: count
+    }
+  }).filter(item => item.count > 0)
+
   // Top 5 produtos mais caros (do banco)
   const { data: topProductsRaw } = await supabase
     .from('products')
@@ -133,6 +179,42 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
     name: p.title,
     price: Number(p.price || 0)
   }))
+
+  // Top selling products - only count closed/finalized opportunities
+  const { data: productsWithOpportunities } = await supabase
+    .from('opportunities')
+    .select(`
+      product_id,
+      products (title),
+      value,
+      status
+    `)
+    .not('product_id', 'is', null)
+    .eq('status', 'finalizado') // Only count finalized opportunities
+
+  // Count how many times each product appears in finalized opportunities
+  const productCounts: Record<string, { title: string, count: number, revenue: number }> = {}
+  productsWithOpportunities?.forEach(opp => {
+    if (opp.product_id && opp.products) {
+      const productId = opp.product_id
+      const title = opp.products.title
+      if (!productCounts[productId]) {
+        productCounts[productId] = { title, count: 0, revenue: 0 }
+      }
+      productCounts[productId].count++
+      productCounts[productId].revenue += Number(opp.value) || 0
+    }
+  })
+
+  // Transform to array and sort by count
+  const topSellingProductsData = Object.entries(productCounts)
+    .map(([id, data]) => ({
+      name: data.title,
+      sold: data.count,
+      revenue: data.revenue
+    }))
+    .sort((a, b) => b.sold - a.sold)
+    .slice(0, 5)
 
   // Render header with period selector
   return (
@@ -194,6 +276,10 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
         topProducts={topProducts}
         timelineData={timelineData}
         pipelineData={pipelineData}
+        conversionRateData={conversionRateData}
+        avgValueByCategoryData={avgValueByCategoryData}
+        valueDistributionData={valueDistributionData}
+        topSellingProductsData={topSellingProductsData}
       />
     </div>
   )
