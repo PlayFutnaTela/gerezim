@@ -16,7 +16,8 @@ export default async function DashboardLayout({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return redirect("/login")
+    console.warn('DashboardLayout: no user session — redirecting to login')
+    return redirect(`/login?message=${encodeURIComponent('Sessão inválida ou expirada. Faça login novamente.')}`)
   }
 
   return (

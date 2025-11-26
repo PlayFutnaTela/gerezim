@@ -45,7 +45,22 @@ export default async function OpportunitiesPage() {
         .select('avatar_url, full_name')
         .eq('id', user.id)
         .single()
-      userProfile = data
+
+      // Construct full avatar URL from Supabase storage
+      if (data?.avatar_url) {
+        const { data: publicUrlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(data.avatar_url)
+
+        userProfile = {
+          ...data,
+          avatar_url: publicUrlData.publicUrl
+        }
+      } else {
+        userProfile = data
+      }
+
+      console.log('User profile loaded:', userProfile) // Debug
     }
   } catch (error) {
     console.error('Error fetching user profile:', error)

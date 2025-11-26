@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import AuthMonitor from '@/components/auth-monitor'
 import { createClient as createServerSupabase } from '@/lib/supabase/server'
 
 // Note: RootLayout is async so we can fetch the server-side session and
@@ -44,6 +45,7 @@ export default async function RootLayout({
                         dangerouslySetInnerHTML={{ __html: `window.__SUPABASE_INITIAL_SESSION = ${JSON.stringify(initialSession).replace(/</g,'\\u003c')};` }}
                     />
                 )}
+                <AuthMonitor />
                 {children}
                 <Toaster />
             </body>

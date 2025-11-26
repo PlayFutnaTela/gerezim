@@ -9,11 +9,13 @@ export async function POST() {
   const { error } = await supabase.auth.signOut()
 
   if (error) {
-    console.error('Erro no logout:', error.message)
+    console.error('Erro no logout:', error.message, error)
+    revalidatePath('/', 'layout')
+    // redirect to login with error message
+    redirect(`/login?message=${encodeURIComponent('Erro ao realizar logout: ' + error.message)}`)
   } else {
     console.log('Logout bem-sucedido')
+    revalidatePath('/', 'layout')
+    redirect(`/login?message=${encodeURIComponent('Logout realizado com sucesso.')}`)
   }
-
-  revalidatePath('/', 'layout')
-  redirect('/login')
 }

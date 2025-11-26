@@ -87,6 +87,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
   const [subtitle, setSubtitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('0')
+  const [currency, setCurrency] = useState('BRL')
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('draft')
   const [tags, setTags] = useState('')
@@ -112,6 +113,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setSubtitle(product.subtitle || '')
       setDescription(product.description || '')
       setPrice(product.price.toString())
+      setCurrency((product as any).currency || 'BRL')
       setCategory(product.category)
       setStatus(product.status)
       setTags(product.tags.join(', '))
@@ -131,6 +133,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setSubtitle('')
       setDescription('')
       setPrice('0')
+      setCurrency('BRL')
       setCategory('')
       setStatus('draft')
       setTags('')
@@ -205,6 +208,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         subtitle,
         description,
         price: Number(price || 0),
+        currency,
         category,
         status,
         type,
@@ -356,8 +360,16 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
 
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
         <div>
-          <label className="text-sm font-medium">Preço (BRL)</label>
+          <label className="text-sm font-medium">Preço</label>
           <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
+        </div>
+        <div>
+          <label className="text-sm font-medium">Moeda</label>
+          <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
+            <option value="BRL">BRL (Real Brasileiro)</option>
+            <option value="EUR">EUR (Euro)</option>
+            <option value="USD">USD (Dólar Americano)</option>
+          </select>
         </div>
         <div>
           <label className="text-sm font-medium">Tipo</label>

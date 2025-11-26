@@ -117,6 +117,7 @@ export interface Database {
           images: string[]
           is_national: boolean | null
           location_info: string | null
+          currency: 'BRL' | 'EUR' | 'USD'
           created_at: string
         }
         Insert: {
@@ -133,6 +134,7 @@ export interface Database {
           images?: string[]
           is_national?: boolean | null
           location_info?: string | null
+          currency?: 'BRL' | 'EUR' | 'USD'
           created_at?: string
         }
         Update: {
@@ -149,6 +151,7 @@ export interface Database {
           images?: string[]
           is_national?: boolean | null
           location_info?: string | null
+          currency?: 'BRL' | 'EUR' | 'USD'
           created_at?: string
         }
       }

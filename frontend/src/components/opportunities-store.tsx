@@ -177,7 +177,7 @@ export default function OpportunitiesStore({
     <div className="p-4 sm:p-6 md:p-8 space-y-6">
       {/* Header Section */}
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-[5px]">
             <div className="flex-shrink-0 flex items-center justify-center">
               {/* Reduce logo scale by ~60%: width 40% of the container, capped for very large screens */}
@@ -207,25 +207,24 @@ export default function OpportunitiesStore({
             {/* User Avatar */}
             <Link
               href="/perfil"
-              className="relative w-12 h-12 rounded-full border border-gold-500 shadow-md shadow-gold-400/50 overflow-hidden transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-gold-500/60 cursor-pointer"
+              className="relative w-12 h-12 rounded-full border border-gold-500 shadow-md shadow-gold-400/50 overflow-hidden transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-gold-500/60 cursor-pointer items-center"
             >
               {userProfile?.avatar_url ? (
                 <img
                   src={userProfile.avatar_url}
                   alt={userProfile.full_name || 'User'}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error('Avatar image failed to load:', userProfile.avatar_url)
+                    e.currentTarget.style.display = 'none'
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                  }}
                 />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-              )}
+              ) : null}
+              <div className={`w-full h-full bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center ${userProfile?.avatar_url ? 'hidden' : ''}`}>
+                <User className="w-6 h-6 text-white" />
+              </div>
             </Link>
-
-            {/* Item count */}
-            <span className="text-sm text-gold-500 font-semibold">
-              {filteredItems?.length || 0} itens
-            </span>
           </div>
         </div>
 
