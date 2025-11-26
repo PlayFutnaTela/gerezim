@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 type Product = {
   id: string
@@ -306,8 +307,16 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
           .select('*')
           .eq('id', id)
           .single()
-        if (updatedProduct) onUpdated(updatedProduct as Product)
+        if (updatedProduct) {
+          toast.success('✅ Produto atualizado com sucesso!', {
+            description: `"${title}" foi atualizado.`
+          })
+          onUpdated(updatedProduct as Product)
+        }
       } else if (onCreated) {
+        toast.success('🎉 Produto cadastrado com sucesso!', {
+          description: `"${title}" foi adicionado ao catálogo.`
+        })
         onCreated()
       }
     } catch (err: any) {

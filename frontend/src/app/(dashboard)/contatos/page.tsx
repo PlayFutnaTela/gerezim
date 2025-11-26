@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { requireAdminOrRedirect } from '@/lib/server-admin'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +8,9 @@ import Link from "next/link"
 
 export default async function ContactsPage() {
   const supabase = createClient()
+
+  // Only admins can access contacts
+  await requireAdminOrRedirect(supabase)
   const { data: contacts } = await supabase
     .from('contacts')
     .select('*')

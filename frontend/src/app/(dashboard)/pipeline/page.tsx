@@ -1,9 +1,13 @@
 import { createClient } from "@/lib/supabase/server"
+import { requireAdminOrRedirect } from '@/lib/server-admin'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export default async function PipelinePage() {
   const supabase = createClient()
+
+  // Ensure only admins can access pipeline
+  await requireAdminOrRedirect(supabase)
   const { data: opportunities } = await supabase
     .from('opportunities')
     .select('*')

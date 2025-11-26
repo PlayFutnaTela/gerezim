@@ -1,11 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
+import { requireAdminOrRedirect } from '@/lib/server-admin'
 import { DollarSign, Users, Briefcase, Activity } from "lucide-react"
 import DashboardCharts from "@/components/dashboard-charts"
 import PeriodSelector from '@/components/period-selector'
 
 export default async function DashboardPage({ searchParams }: { searchParams?: { range?: string } }) {
   const supabase = createClient()
+
+  // Ensure the user is an admin — redirects otherwise
+  await requireAdminOrRedirect(supabase)
 
   // Determine date range filter from query param `range` (server-side)
   const range = searchParams?.range || '30d'

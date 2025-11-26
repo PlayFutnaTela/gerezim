@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
+import { requireAdminOrRedirect } from '@/lib/server-admin'
 import { BarChart3, TrendingUp, CheckCircle2, XCircle } from "lucide-react"
 
 export default async function ReportsPage() {
   const supabase = createClient()
+
+  // Only admins are allowed to view reports
+  await requireAdminOrRedirect(supabase)
 
   const { data: opportunities } = await supabase.from('opportunities').select('*')
 

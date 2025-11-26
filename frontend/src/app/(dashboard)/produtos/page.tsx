@@ -2,6 +2,7 @@ import ProductForm from '@/components/product-form'
 import ProductList from '@/components/product-list'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { requireAdminOrRedirect } from '@/lib/server-admin'
 
 export default async function ProdutosPage() {
   const supabase = createClient()
@@ -10,7 +11,8 @@ export default async function ProdutosPage() {
   // Get server session to pass into the client component so createBrowserClient
   // in the client will have the authenticated session and uploads won't be anonymous.
   const { data: { session } } = await supabase.auth.getSession()
-  if (!user) redirect('/login')
+  // Ensure admin role, will redirect to /login or /oportunidades when not authorized
+  await requireAdminOrRedirect(supabase)
 
   // Fetch existing products — select only needed columns and limit to reduce payload
   let products = []
