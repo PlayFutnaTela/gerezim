@@ -171,7 +171,7 @@ export default function OpportunitiesStore({
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0 flex items-center justify-center">
-              <img src="/logo.png" alt="Gerezim logo" className="h-12 sm:h-14 md:h-16 lg:h-20 object-contain" />
+              <img src="/logo.png" alt="Gerezim logo" className="h-12 sm:h-14 md:h-16 lg:h-20 object-contain" style={{ height: 'auto' }} />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gerezim</h1>

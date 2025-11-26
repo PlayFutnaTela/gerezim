@@ -11,7 +11,7 @@ export default function Sidebar() {
       <div className="flex h-14 items-center border-b border-navy-700 px-4 font-semibold tracking-tight text-white">
         {/* Logo (left) and name (right) - name increased by 20% */}
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Gerezim" width={40} height={40} className="object-contain rounded" />
+          <Image src="/logo.png" alt="Gerezim" width={40} height={40} style={{ height: 'auto' }} className="object-contain rounded" />
           <div className="text-[1.2rem] font-semibold">Gerezim</div>
         </div>
       </div>

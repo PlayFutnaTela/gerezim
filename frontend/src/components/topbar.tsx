@@ -31,21 +31,21 @@ export default async function Topbar({ user }: { user: any }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white h-16 flex items-center px-6 justify-between shadow-sm">
+    <header className="sticky top-0 z-20 border-b border-gray-800 bg-black text-white h-16 flex items-center px-6 justify-between">
       <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10 border-2 border-blue-100">
+        <Avatar className="h-10 w-10 border-2 border-gold-300">
           {avatarUrl ? (
             <AvatarImage src={avatarUrl} alt={displayName} />
           ) : (
-            <AvatarFallback className="bg-blue-600 text-white font-semibold">
+            <AvatarFallback className="bg-navy-600 text-gold-300 font-semibold">
               {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           )}
         </Avatar>
 
         <div>
-          <div className="text-sm font-semibold text-gray-900">{displayName}</div>
-          {user?.email && <div className="text-xs text-gray-500">{user.email}</div>}
+          <div className="text-sm font-semibold text-white">{displayName}</div>
+          {user?.email && <div className="text-xs text-white/70">{user.email}</div>}
         </div>
       </div>
 
@@ -53,9 +53,9 @@ export default async function Topbar({ user }: { user: any }) {
         <form action="/auth/signout" method="post">
           <Button
             type="submit"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="gap-2"
+            className="gap-2 text-white hover:text-gold-300 hover:bg-navy-600"
           >
             <LogOut className="h-4 w-4" />
             Sair

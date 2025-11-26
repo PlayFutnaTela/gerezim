@@ -51,14 +51,76 @@ export default function DashboardCharts({
   const pipelineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Carregar o Google Charts
+    // Carregar o Google Charts com proteção: carregamos o loader se necessário
     const loadGoogleCharts = async () => {
-      if (typeof window !== 'undefined') {
-        const google = await import('google-charts');
+      if (typeof window === 'undefined') return
+
+      // Ensure `google.charts` is loaded. If not, inject the official loader and wait.
+      const ensureGoogleCharts = async () => {
+        const win = window as any
+        if (win.google && win.google.visualization && win.google.charts) return win.google
+
+        // If loader already present but not loaded, call load
+        if (win.google && win.google.charts && win.google.charts.load) {
+          return await new Promise((resolve, reject) => {
+            try {
+              win.google.charts.load('current', { packages: ['corechart', 'bar'] })
+              win.google.charts.setOnLoadCallback(() => resolve(win.google))
+            } catch (e) {
+              reject(e)
+            }
+          })
+        }
+
+        // Inject loader script
+        await new Promise<void>((resolve, reject) => {
+          const existing = document.querySelector('script[src="https://www.gstatic.com/charts/loader.js"]')
+          if (existing) {
+            // Wait a short while for google to initialize
+            const check = () => {
+              const w = (window as any)
+              if (w.google && w.google.visualization && w.google.charts) resolve()
+              else setTimeout(check, 50)
+            }
+            check()
+            return
+          }
+
+          const script = document.createElement('script')
+          script.src = 'https://www.gstatic.com/charts/loader.js'
+          script.async = true
+          script.onload = () => resolve()
+          script.onerror = () => reject(new Error('Failed to load google charts loader'))
+          document.head.appendChild(script)
+        })
+
+        // now load packages
+        const win2 = window as any
+        return await new Promise((resolve, reject) => {
+          try {
+            win2.google.charts.load('current', { packages: ['corechart', 'bar'] })
+            win2.google.charts.setOnLoadCallback(() => resolve(win2.google))
+          } catch (e) {
+            reject(e)
+          }
+        })
+      }
+
+      let google: any
+      try {
+        google = await ensureGoogleCharts()
+      } catch (err) {
+        console.error('Failed to initialize Google Charts', err)
+        return
+      }
 
         // Gráfico de Taxa de Conversão por Estágio do Funil
         if (conversionRateData && conversionRateData.length > 0 && conversionRateRef.current) {
-          const data = new google.visualization.DataTable();
+          // guard: ensure DataTable exists
+          if (!google || !google.visualization || !google.visualization.DataTable) {
+            console.warn('Google visualization DataTable not available — skipping conversionRate chart')
+          } else {
+            const data = new google.visualization.DataTable();
           data.addColumn('string', 'Estágio');
           data.addColumn('number', 'Taxa de Conversão (%)');
 
@@ -96,13 +158,17 @@ export default function DashboardCharts({
             }
           };
 
-          const chart = new google.visualization.BarChart(conversionRateRef.current);
-          chart.draw(data, options);
+            const chart = new google.visualization.BarChart(conversionRateRef.current);
+            chart.draw(data, options);
+          }
         }
 
         // Gráfico de Valor Médio por Oportunidade por Categoria
         if (avgValueByCategoryData && avgValueByCategoryData.length > 0 && avgValueByCategoryRef.current) {
-          const data = new google.visualization.DataTable();
+          if (!google || !google.visualization || !google.visualization.DataTable) {
+            console.warn('Google visualization DataTable not available — skipping avgValueByCategory chart')
+          } else {
+            const data = new google.visualization.DataTable();
           data.addColumn('string', 'Categoria');
           data.addColumn('number', 'Valor Médio (R$)');
 
@@ -179,13 +245,17 @@ export default function DashboardCharts({
             }
           };
 
-          const chart = new google.visualization.ColumnChart(valueDistributionRef.current);
-          chart.draw(data, options);
+            const chart = new google.visualization.ColumnChart(valueDistributionRef.current);
+            chart.draw(data, options);
+          }
         }
 
         // Gráfico de Produtos Mais Vendidos
         if (topSellingProductsData && topSellingProductsData.length > 0 && topSellingProductsRef.current) {
-          const data = new google.visualization.DataTable();
+          if (!google || !google.visualization || !google.visualization.DataTable) {
+            console.warn('Google visualization DataTable not available — skipping topSellingProducts chart')
+          } else {
+            const data = new google.visualization.DataTable();
           data.addColumn('string', 'Produto');
           data.addColumn('number', 'Quantidade Vendida');
           data.addColumn({type: 'number', role: 'tooltip', p: {html: true}});
@@ -226,13 +296,17 @@ export default function DashboardCharts({
             }
           };
 
-          const chart = new google.visualization.BarChart(topSellingProductsRef.current);
-          chart.draw(data, options);
+            const chart = new google.visualization.BarChart(topSellingProductsRef.current);
+            chart.draw(data, options);
+          }
         }
 
         // Gráfico de Pizza - Oportunidades por Categoria
         if (opportunityData && opportunityData.length > 0 && opportunityCategoryRef.current) {
-          const data = new google.visualization.DataTable();
+          if (!google || !google.visualization || !google.visualization.DataTable) {
+            console.warn('Google visualization DataTable not available — skipping opportunity category pie chart')
+          } else {
+            const data = new google.visualization.DataTable();
           data.addColumn('string', 'Categoria');
           data.addColumn('number', 'Quantidade');
 
@@ -260,13 +334,17 @@ export default function DashboardCharts({
             }
           };
 
-          const chart = new google.visualization.PieChart(opportunityCategoryRef.current);
-          chart.draw(data, options);
+            const chart = new google.visualization.PieChart(opportunityCategoryRef.current);
+            chart.draw(data, options);
+          }
         }
 
         // Gráfico de Barras Horizontal - Top 5 produtos mais caros
         if (topProducts && topProducts.length > 0 && topProductsRef.current) {
-          const data = new google.visualization.DataTable();
+          if (!google || !google.visualization || !google.visualization.DataTable) {
+            console.warn('Google visualization DataTable not available — skipping topProducts chart')
+          } else {
+            const data = new google.visualization.DataTable();
           data.addColumn('string', 'Produto');
           data.addColumn('number', 'Preço (R$)');
 
@@ -302,13 +380,17 @@ export default function DashboardCharts({
             }
           };
 
-          const chart = new google.visualization.BarChart(topProductsRef.current);
-          chart.draw(data, options);
+            const chart = new google.visualization.BarChart(topProductsRef.current);
+            chart.draw(data, options);
+          }
         }
 
         // Gráfico de Linhas - Evolução no Faturamento
         if (timelineData && timelineData.length > 0 && timelineRef.current) {
-          const data = new google.visualization.DataTable();
+          if (!google || !google.visualization || !google.visualization.DataTable) {
+            console.warn('Google visualization DataTable not available — skipping timeline chart')
+          } else {
+            const data = new google.visualization.DataTable();
           data.addColumn('string', 'Mês');
           data.addColumn('number', 'Faturamento (R$)');
           data.addColumn('number', 'Oportunidades');
@@ -346,13 +428,17 @@ export default function DashboardCharts({
             lineWidth: 3
           };
 
-          const chart = new google.visualization.LineChart(timelineRef.current);
-          chart.draw(data, options);
+            const chart = new google.visualization.LineChart(timelineRef.current);
+            chart.draw(data, options);
+          }
         }
 
         // Gráfico de Funil - Pipeline de Vendas
         if (pipelineData && pipelineData.length > 0 && pipelineRef.current) {
-          const data = new google.visualization.DataTable();
+          if (!google || !google.visualization || !google.visualization.DataTable) {
+            console.warn('Google visualization DataTable not available — skipping pipeline chart')
+          } else {
+            const data = new google.visualization.DataTable();
           data.addColumn('string', 'Estágio');
           data.addColumn('number', 'Quantidade');
 
@@ -380,8 +466,9 @@ export default function DashboardCharts({
             }
           };
 
-          const chart = new google.visualization.BarChart(pipelineRef.current);
-          chart.draw(data, options);
+            const chart = new google.visualization.BarChart(pipelineRef.current);
+            chart.draw(data, options);
+          }
         }
       }
     };

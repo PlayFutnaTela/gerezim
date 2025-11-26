@@ -1,6 +1,12 @@
 import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient(initialSession?: any) {
+  // If caller didn't provide initialSession, allow a server-injected
+  // `window.__SUPABASE_INITIAL_SESSION` to be used (set by RootLayout on first render)
+  let resolvedInitial = initialSession
+  if (typeof window !== 'undefined' && !resolvedInitial) {
+    resolvedInitial = (window as any).__SUPABASE_INITIAL_SESSION ?? null
+  }
   // Accept an optional initialSession so server-derived session can be passed into
   // the browser client. This ensures the client has an authenticated session
   // when the page is server-rendered and then hydrates on the client.
@@ -8,7 +14,7 @@ export function createClient(initialSession?: any) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      initialSession,
+      initialSession: resolvedInitial,
       cookies: {
         get(name: string) {
           const match = document.cookie.split('; ').find(row => row.startsWith(name + '='))
