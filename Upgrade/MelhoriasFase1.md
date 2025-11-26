@@ -21,7 +21,7 @@ Crie:
 ✔ Captura rápida: botão “Salvar do WhatsApp” (colar link ou texto → salva como interação automaticamente).
 ✔ Tags para organizar melhor materiais. -->
 
-3. Compartilhamento Profissional
+<!-- 3. Compartilhamento Profissional
 
 Hoje você compartilha via link do WhatsApp, mas é básico.
 
@@ -29,7 +29,7 @@ Implemente:
 
 🔹 Página pública do item (estilo OLX Premium / Loft)
 🔹 Pré-visualização elegante com foto + preço + specs
-🔹 Botão “Falar com o Intermediador” → WhatsApp
+🔹 Botão “Falar com o Intermediador” → WhatsApp -->
 🔹 Pixel de rastreamento (você sabe quem abriu, quanto tempo ficou, quais fotos viu)
 
 Isso traz nível Empresarial / Luxo ao negócio.

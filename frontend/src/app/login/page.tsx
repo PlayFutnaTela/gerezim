@@ -7,15 +7,6 @@ import { Label } from "@/components/ui/label"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from 'sonner'
 import LoginCarousel from '@/components/login-carousel'
-import dynamic from 'next/dynamic'
-
-// shader background is client-only (three/fiber) - load dynamically to avoid SSR/hydration errors
-// use relative import to ensure TS resolves the module correctly from /src/app/login
-const ShaderBg = dynamic<{
-  color1?: string
-  color2?: string
-  className?: string
-}>(() => import('../../../style/shader-bg'), { ssr: false })
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 export default function LoginPage({
@@ -131,11 +122,8 @@ export default function LoginPage({
   const showForgotPassword = searchParams.forgot === 'true'
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4 relative">
-      {/* Shader background (client-only) - white + project gold */}
-      <ShaderBg color1="#ffffff" color2="#C59A00" className="-z-10" />
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+    <div className="flex min-h-screen w-full items-center justify-center p-4 bg-navy-500">
+      {/* No shader — using project blue background */}
 
       {/* Centered Card Container */}
       <div
