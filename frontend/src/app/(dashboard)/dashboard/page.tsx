@@ -189,9 +189,9 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
     .from('opportunities')
     .select(`
       product_id,
-      products (title),
       value,
-      status
+      status,
+      products!inner(title)
     `)
     .not('product_id', 'is', null)
     .eq('status', 'finalizado') // Only count finalized opportunities
@@ -199,9 +199,9 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
   // Count how many times each product appears in finalized opportunities
   const productCounts: Record<string, { title: string, count: number, revenue: number }> = {}
   productsWithOpportunities?.forEach(opp => {
-    if (opp.product_id && opp.products) {
+    if (opp.product_id && opp.products && Array.isArray(opp.products) && opp.products.length > 0) {
       const productId = opp.product_id
-      const title = opp.products.title
+      const title = opp.products[0].title
       if (!productCounts[productId]) {
         productCounts[productId] = { title, count: 0, revenue: 0 }
       }

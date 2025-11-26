@@ -124,16 +124,16 @@ export default function LoginPage({
   return (
     <div
       className="flex min-h-screen w-full items-center justify-center bg-cover bg-center p-4"
-      style={{ backgroundImage: "url('/background-login.jpg')" }}
+      style={{ backgroundImage: "url('/BG - GEREZIM - TELA DE LOGIN.png')" }}
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
 
       {/* Centered Card Container */}
-      <div className="relative z-10 flex w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="relative z-10 flex w-full max-w-5xl overflow-hidden rounded-lg bg-white shadow-2xl">
 
         {/* Left Side - Carousel */}
-        <div className="hidden lg:block lg:w-1/2 relative bg-black">
+        <div className="hidden lg:block lg:w-[65%] relative bg-black">
           <LoginCarousel />
           <div className="absolute top-8 left-8 z-20">
             {/* Optional: Add Logo here if needed */}
@@ -142,18 +142,10 @@ export default function LoginPage({
         </div>
 
         {/* Right Side - Login Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 bg-white">
+        <div className="w-full lg:w-[35%] flex items-center justify-center p-8 lg:p-12 bg-white">
           <div className="w-full max-w-md space-y-8">
-            <div className="space-y-2 text-center lg:text-left">
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                {showForgotPassword ? "Recuperar Senha" : "Bem-vindo de volta"}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {showForgotPassword
-                  ? "Digite seu email para receber o link de recuperação"
-                  : "Acesse sua conta para gerenciar seus projetos"
-                }
-              </p>
+            <div className="flex justify-center mb-8">
+              <img src="/logo.png" alt="Logo" className="h-16 w-auto object-contain" />
             </div>
 
             {showForgotPassword ? (
