@@ -18,6 +18,9 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [fullName, setFullName] = useState('')
+    const [phone, setPhone] = useState('')
+    const [city, setCity] = useState('')
+    const [state, setState] = useState('')
     const [bio, setBio] = useState('')
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
     const [role, setRole] = useState<'user' | 'adm'>('user')
@@ -34,7 +37,7 @@ export default function ProfilePage() {
 
                 const { data, error, status } = await supabase
                     .from('profiles')
-                    .select(`full_name, bio, avatar_url, role`)
+                    .select(`full_name, phone, city, state, bio, avatar_url, role`)
                     .eq('id', user.id)
                     .single()
 
@@ -44,6 +47,9 @@ export default function ProfilePage() {
 
                 if (data) {
                     setFullName(data.full_name || '')
+                    setPhone(data.phone || '')
+                    setCity(data.city || '')
+                    setState(data.state || '')
                     setBio(data.bio || '')
                     setAvatarUrl(data.avatar_url)
                     if (data.role) setRole(data.role)
@@ -52,7 +58,7 @@ export default function ProfilePage() {
         } catch (error) {
             console.error('Error loading user data!', error)
             // Friendly toast for the user
-            try { toast.error('Não foi possível carregar seus dados — confira o console para detalhes.')} catch(e) {}
+            try { toast.error('Não foi possível carregar seus dados — confira o console para detalhes.') } catch (e) { }
         } finally {
             setLoading(false)
         }
@@ -72,6 +78,9 @@ export default function ProfilePage() {
             const updates = {
                 id: user.id,
                 full_name: fullName,
+                phone,
+                city,
+                state,
                 bio,
                 avatar_url: avatarUrl,
                 updated_at: new Date().toISOString(),
@@ -151,13 +160,13 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="bio">Bio</Label>
-                                <Textarea
-                                    id="bio"
-                                    value={bio}
-                                    onChange={(e) => setBio(e.target.value)}
-                                    placeholder="Conte um pouco sobre você..."
-                                    className="resize-none h-24"
+                                <Label htmlFor="phone">Telefone (WhatsApp)</Label>
+                                <Input
+                                    id="phone"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="(00) 00000-0000"
+                                    type="tel"
                                 />
                             </div>
 
@@ -167,6 +176,39 @@ export default function ProfilePage() {
                                     Email
                                 </Label>
                                 <Input id="email" value={user.email} disabled className="bg-gray-50" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="city">Cidade</Label>
+                                    <Input
+                                        id="city"
+                                        value={city}
+                                        onChange={(e) => setCity(e.target.value)}
+                                        placeholder="Sua cidade"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="state">Estado</Label>
+                                    <Input
+                                        id="state"
+                                        value={state}
+                                        onChange={(e) => setState(e.target.value)}
+                                        placeholder="UF (ex: SP)"
+                                        maxLength={2}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="bio">Bio</Label>
+                                <Textarea
+                                    id="bio"
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
+                                    placeholder="Conte um pouco sobre você..."
+                                    className="resize-none h-24"
+                                />
                             </div>
 
                             <div className="pt-4 flex justify-end">

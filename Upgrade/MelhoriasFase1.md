@@ -11,7 +11,7 @@ Adicione um fluxo claro:
 
 Isso transforma a plataforma numa ferramenta profissional, não apenas um CRM.
 
-2. Área de Insumos do Negócio
+<!-- 2. Área de Insumos do Negócio
 
 Hoje o intermediador usa muito WhatsApp, mas perde links, fotos, PDFs, contratos.
 
@@ -19,7 +19,7 @@ Crie:
 
 ✔ Biblioteca pessoal (fotos, vídeos, PDFs, contratos, minutas)
 ✔ Captura rápida: botão “Salvar do WhatsApp” (colar link ou texto → salva como interação automaticamente).
-✔ Tags para organizar melhor materiais.
+✔ Tags para organizar melhor materiais. -->
 
 3. Compartilhamento Profissional
 

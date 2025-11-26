@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import FilePreviewModal from './file-preview-modal'
 
 type Insumo = {
     id: string
@@ -35,6 +36,7 @@ export default function InsumosList({ refreshTrigger, currentFolderId, onFolderC
     const [searchTerm, setSearchTerm] = useState('')
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
     const [breadcrumbs, setBreadcrumbs] = useState<{ id: string, title: string }[]>([])
+    const [previewFile, setPreviewFile] = useState<Insumo | null>(null)
 
     const supabase = createClient()
 
@@ -49,16 +51,9 @@ export default function InsumosList({ refreshTrigger, currentFolderId, onFolderC
                 setBreadcrumbs([])
                 return
             }
-            // Simple fetch to get current folder name (recursive would be better for deep nesting, but this is a start)
-            // For a proper breadcrumb trail, we might need to fetch the path or store it.
-            // For now, let's just show the current folder name if we have it in the list, or fetch it.
 
             const { data } = await supabase.from('insumos').select('id, title, parent_id').eq('id', currentFolderId).single()
             if (data) {
-                // This logic is simplified. For full breadcrumbs we'd need to traverse up.
-                // Let's just append for now if it's a child of the last one, or reset if we jumped.
-                // Actually, a better way is to fetch the chain.
-                // For MVP, let's just show "Insumos > [Current Folder]"
                 setBreadcrumbs([{ id: data.id, title: data.title }])
             }
         }
@@ -254,7 +249,7 @@ export default function InsumosList({ refreshTrigger, currentFolderId, onFolderC
                                     <td className="px-4 py-3">
                                         <div
                                             className={cn("font-medium text-gray-900 cursor-pointer hover:underline", item.is_folder && "text-blue-600")}
-                                            onClick={() => item.is_folder && onFolderChange(item.id)}
+                                            onClick={() => item.is_folder ? onFolderChange(item.id) : setPreviewFile(item)}
                                         >
                                             {item.title}
                                         </div>
@@ -301,7 +296,7 @@ export default function InsumosList({ refreshTrigger, currentFolderId, onFolderC
                                 "group relative border rounded-lg p-4 flex flex-col items-center gap-3 text-center bg-white hover:shadow-md transition-all cursor-pointer",
                                 item.is_folder && "hover:border-blue-300 hover:bg-blue-50/30"
                             )}
-                            onClick={() => item.is_folder ? onFolderChange(item.id) : (item.file_url && window.open(item.file_url, '_blank'))}
+                            onClick={() => item.is_folder ? onFolderChange(item.id) : setPreviewFile(item)}
                         >
                             <div className="p-3 rounded-full bg-gray-50 group-hover:bg-white transition-colors">
                                 {item.is_folder ? (
@@ -329,6 +324,12 @@ export default function InsumosList({ refreshTrigger, currentFolderId, onFolderC
                     ))}
                 </div>
             )}
+
+            <FilePreviewModal
+                file={previewFile}
+                isOpen={!!previewFile}
+                onClose={() => setPreviewFile(null)}
+            />
         </div>
     )
 }
