@@ -43,6 +43,41 @@ const AVAILABLE_CATEGORIES = [
   'Embarcações'
 ]
 
+// Brazilian states for location selection
+const BRAZILIAN_STATES = [
+  { code: 'AC', name: 'Acre' },
+  { code: 'AL', name: 'Alagoas' },
+  { code: 'AP', name: 'Amapá' },
+  { code: 'AM', name: 'Amazonas' },
+  { code: 'BA', name: 'Bahia' },
+  { code: 'CE', name: 'Ceará' },
+  { code: 'DF', name: 'Distrito Federal' },
+  { code: 'ES', name: 'Espírito Santo' },
+  { code: 'GO', name: 'Goiás' },
+  { code: 'MA', name: 'Maranhão' },
+  { code: 'MT', name: 'Mato Grosso' },
+  { code: 'MS', name: 'Mato Grosso do Sul' },
+  { code: 'MG', name: 'Minas Gerais' },
+  { code: 'PA', name: 'Pará' },
+  { code: 'PB', name: 'Paraíba' },
+  { code: 'PR', name: 'Paraná' },
+  { code: 'PE', name: 'Pernambuco' },
+  { code: 'PI', name: 'Piauí' },
+  { code: 'RJ', name: 'Rio de Janeiro' },
+  { code: 'RN', name: 'Rio Grande do Norte' },
+  { code: 'RS', name: 'Rio Grande do Sul' },
+  { code: 'RO', name: 'Rondônia' },
+  { code: 'RR', name: 'Roraima' },
+  { code: 'SC', name: 'Santa Catarina' },
+  { code: 'SP', name: 'São Paulo' },
+  { code: 'SE', name: 'Sergipe' },
+  { code: 'TO', name: 'Tocantins' }
+]
+
+// Categories that require location information
+const CATEGORIES_REQUIRING_LOCATION = ['Imovel', 'Empresas', 'Industrias']
+
+
 export default function ProductForm({ onCreated, onUpdated, onCancel, initialSession, product }: Props) {
   // Supabase client for database operations (insert/update products)
   const supabase = createClient(initialSession)
@@ -64,6 +99,11 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Location-related states
+  const [isNational, setIsNational] = useState<boolean | null>(null)
+  const [locationInfo, setLocationInfo] = useState('')
+  const [showLocationFields, setShowLocationFields] = useState(false)
+
   // Initialize form with product data if editing
   useEffect(() => {
     if (product) {
@@ -78,6 +118,12 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setExistingImages(product.images)
       setType((product as any).type || 'produto')
       setCommission(((product as any).commission_percent ?? 0).toString())
+
+      // Initialize location fields
+      const prodWithLocation = product as any
+      setIsNational(prodWithLocation.is_national ?? null)
+      setLocationInfo(prodWithLocation.location_info || '')
+      setShowLocationFields(CATEGORIES_REQUIRING_LOCATION.includes(product.category))
     } else {
       // Reset for new product
       setTitle('')
@@ -93,15 +139,32 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       setExistingImages([])
       setFiles([])
       setPreviews([])
+
+      // Reset location fields
+      setIsNational(null)
+      setLocationInfo('')
+      setShowLocationFields(false)
     }
   }, [product])
+
+  // Update showLocationFields when category changes
+  useEffect(() => {
+    const shouldShow = CATEGORIES_REQUIRING_LOCATION.includes(category)
+    setShowLocationFields(shouldShow)
+
+    // Reset location fields when hiding
+    if (!shouldShow) {
+      setIsNational(null)
+      setLocationInfo('')
+    }
+  }, [category])
 
   function addFiles(list: FileList | null) {
     if (!list) return
     const arr = Array.from(list)
     // checks — consider already existing images plus new pending files
     if ((existingImages.length || 0) + files.length + arr.length > MAX_FILES) {
-      setError(`Máximo ${MAX_FILES} imagens no total`) ; return
+      setError(`Máximo ${MAX_FILES} imagens no total`); return
     }
     for (const f of arr) {
       if (!SUPPORTED_TYPES.includes(f.type)) { setError('Formato não permitido'); return }
@@ -120,6 +183,22 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
     setLoading(true)
 
     try {
+      // Validate location fields for specific categories
+      if (CATEGORIES_REQUIRING_LOCATION.includes(category)) {
+        if (isNational === null) {
+          setError('Por favor, informe se é nacional ou internacional.')
+          setLoading(false)
+          return
+        }
+        if (!locationInfo || locationInfo.trim() === '') {
+          setError(isNational
+            ? 'Por favor, selecione o estado.'
+            : 'Por favor, informe a localização internacional.')
+          setLoading(false)
+          return
+        }
+      }
+
       const payload = {
         title,
         subtitle,
@@ -131,6 +210,8 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         tags: tags ? tags.split(',').map(t => t.trim()) : [],
         stock: Number(stock || 0),
         commission_percent: Number(commission || 0),
+        is_national: showLocationFields ? isNational : null,
+        location_info: showLocationFields ? locationInfo : null,
         images: []
       }
 
@@ -251,27 +332,27 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-sm font-medium">Título</label>
-          <input required value={title} onChange={e=>setTitle(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
+          <input required value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
         </div>
         <div>
           <label className="text-sm font-medium">Subtítulo</label>
-          <input value={subtitle} onChange={e=>setSubtitle(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
+          <input value={subtitle} onChange={e => setSubtitle(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
         </div>
       </div>
 
       <div>
         <label className="text-sm font-medium">Descrição</label>
-        <textarea value={description} onChange={e=>setDescription(e.target.value)} className="w-full border rounded px-3 py-2 mt-1 min-h-[120px]" />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full border rounded px-3 py-2 mt-1 min-h-[120px]" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
         <div>
           <label className="text-sm font-medium">Preço (BRL)</label>
-          <input type="number" step="0.01" value={price} onChange={e=>setPrice(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
+          <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
         </div>
         <div>
           <label className="text-sm font-medium">Tipo</label>
-          <select value={type} onChange={e=>setType(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
+          <select value={type} onChange={e => setType(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
             <option value="produto">Produto</option>
             <option value="oportunidade">Oportunidade</option>
           </select>
@@ -279,7 +360,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         {/* SKU removed - no longer collected */}
         <div>
           <label className="text-sm font-medium">Categoria</label>
-          <select value={category} onChange={e=>setCategory(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
+          <select value={category} onChange={e => setCategory(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
             <option value="">Selecione abaixo</option>
             {AVAILABLE_CATEGORIES.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
@@ -288,7 +369,7 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
         </div>
         <div>
           <label className="text-sm font-medium">Status</label>
-          <select value={status} onChange={e=>setStatus(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
+          <select value={status} onChange={e => setStatus(e.target.value)} className="w-full border rounded px-3 py-2 mt-1">
             <option value="draft">Rascunho</option>
             <option value="active">Ativo</option>
             <option value="inactive">Inativo</option>
@@ -312,17 +393,87 @@ export default function ProductForm({ onCreated, onUpdated, onCancel, initialSes
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-sm font-medium">Tags (separadas por vírgula)</label>
-          <input value={tags} onChange={e=>setTags(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
+          <input value={tags} onChange={e => setTags(e.target.value)} className="w-full border rounded px-3 py-2 mt-1" />
         </div>
         <div>
           <label className="text-sm font-medium">Estoque</label>
-          <input type="number" value={stock} onChange={e=>setStock(Number(e.target.value) || '')} className="w-full border rounded px-3 py-2 mt-1" />
+          <input type="number" value={stock} onChange={e => setStock(Number(e.target.value) || '')} className="w-full border rounded px-3 py-2 mt-1" />
         </div>
       </div>
 
+      {/* Conditional Location Fields - Only for specific categories */}
+      {showLocationFields && (
+        <div className="border-2 border-gold-300 rounded-lg p-4 space-y-3 bg-gold-50">
+          <h3 className="text-sm font-semibold text-gold-700">📍 Informações de Localização (Obrigatório)</h3>
+
+          {/* National/International Checkbox */}
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="location-type"
+                checked={isNational === true}
+                onChange={() => {
+                  setIsNational(true)
+                  setLocationInfo('')
+                }}
+                className="w-4 h-4"
+              />
+              <span className="text-sm font-medium">Nacional 🇧🇷</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="location-type"
+                checked={isNational === false}
+                onChange={() => {
+                  setIsNational(false)
+                  setLocationInfo('')
+                }}
+                className="w-4 h-4"
+              />
+              <span className="text-sm font-medium">Internacional 🌍</span>
+            </label>
+          </div>
+
+          {/* Conditional fields based on national/international selection */}
+          {isNational === true && (
+            <div>
+              <label className="text-sm font-medium">Estado *</label>
+              <select
+                value={locationInfo}
+                onChange={e => setLocationInfo(e.target.value)}
+                className="w-full border rounded px-3 py-2 mt-1"
+              >
+                <option value="">Selecione o estado</option>
+                {BRAZILIAN_STATES.map(state => (
+                  <option key={state.code} value={state.code}>
+                    {state.name} ({state.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {isNational === false && (
+            <div>
+              <label className="text-sm font-medium">Localização Internacional *</label>
+              <input
+                type="text"
+                value={locationInfo}
+                onChange={e => setLocationInfo(e.target.value)}
+                placeholder="Ex: Miami, USA ou Paris, France"
+                className="w-full border rounded px-3 py-2 mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">Informe a cidade e país</p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div>
         <label className="text-sm font-medium">Imagens (até {MAX_FILES}, cada até {MAX_FILE_MB}MB)</label>
-        <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>addFiles(e.target.files)} className="block mt-2" />
+        <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => addFiles(e.target.files)} className="block mt-2" />
         <div className="flex gap-2 mt-3 flex-wrap">
           {/* Existing images */}
           {existingImages.map((img, i) => (

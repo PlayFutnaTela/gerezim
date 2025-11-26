@@ -115,6 +115,8 @@ export interface Database {
           tags: string[]
           stock: number
           images: string[]
+          is_national: boolean | null
+          location_info: string | null
           created_at: string
         }
         Insert: {
@@ -129,6 +131,8 @@ export interface Database {
           tags?: string[]
           stock?: number
           images?: string[]
+          is_national?: boolean | null
+          location_info?: string | null
           created_at?: string
         }
         Update: {
@@ -143,6 +147,8 @@ export interface Database {
           tags?: string[]
           stock?: number
           images?: string[]
+          is_national?: boolean | null
+          location_info?: string | null
           created_at?: string
         }
       }
@@ -150,6 +156,7 @@ export interface Database {
         Row: {
           id: string
           full_name: string | null
+          role: 'user' | 'adm'
           bio: string | null
           avatar_url: string | null
           updated_at: string | null
@@ -157,6 +164,7 @@ export interface Database {
         Insert: {
           id: string
           full_name?: string | null
+          role?: 'user' | 'adm'
           bio?: string | null
           avatar_url?: string | null
           updated_at?: string | null
@@ -164,6 +172,7 @@ export interface Database {
         Update: {
           id?: string
           full_name?: string | null
+          role?: 'user' | 'adm'
           bio?: string | null
           avatar_url?: string | null
           updated_at?: string | null

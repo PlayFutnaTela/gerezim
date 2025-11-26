@@ -12,16 +12,19 @@ export default async function Topbar({ user }: { user: any }) {
   try {
     const { data } = await supabase
       .from('profiles')
-      .select('full_name, avatar_url')
+      .select('full_name, avatar_url, role')
       .eq('id', user.id)
       .single()
     profile = data
   } catch (error) {
-    console.log('Error loading profile in topbar')
+    console.error('Error loading profile in topbar', error)
   }
 
   // Determinar o nome a ser exibido
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário'
+
+  // role reading (profile?.role can be 'user' | 'adm')
+  const role = profile?.role || 'user'
 
   // URL do avatar do Storage
   let avatarUrl = null
@@ -44,7 +47,12 @@ export default async function Topbar({ user }: { user: any }) {
         </Avatar>
 
         <div>
-          <div className="text-sm font-semibold text-white">{displayName}</div>
+          <div className="text-sm font-semibold text-white flex items-center gap-2">
+            <span>{displayName}</span>
+            {role === 'adm' && (
+              <span className="inline-block text-xs px-2 py-0.5 rounded text-white bg-gold-300 font-semibold">ADM</span>
+            )}
+          </div>
           {user?.email && <div className="text-xs text-white/70">{user.email}</div>}
         </div>
       </div>

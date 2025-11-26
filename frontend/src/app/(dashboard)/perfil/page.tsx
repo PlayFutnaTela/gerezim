@@ -20,6 +20,7 @@ export default function ProfilePage() {
     const [fullName, setFullName] = useState('')
     const [bio, setBio] = useState('')
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+    const [role, setRole] = useState<'user' | 'adm'>('user')
 
     const supabase = createClient()
 
@@ -33,7 +34,7 @@ export default function ProfilePage() {
 
                 const { data, error, status } = await supabase
                     .from('profiles')
-                    .select(`full_name, bio, avatar_url`)
+                    .select(`full_name, bio, avatar_url, role`)
                     .eq('id', user.id)
                     .single()
 
@@ -45,10 +46,13 @@ export default function ProfilePage() {
                     setFullName(data.full_name || '')
                     setBio(data.bio || '')
                     setAvatarUrl(data.avatar_url)
+                    if (data.role) setRole(data.role)
                 }
             }
         } catch (error) {
-            console.log('Error loading user data!')
+            console.error('Error loading user data!', error)
+            // Friendly toast for the user
+            try { toast.error('Não foi possível carregar seus dados — confira o console para detalhes.')} catch(e) {}
         } finally {
             setLoading(false)
         }
@@ -116,8 +120,9 @@ export default function ProfilePage() {
                                     setAvatarUrl(url)
                                 }}
                             />
-                            <h3 className="mt-4 font-semibold text-lg text-navy-900">
+                            <h3 className="mt-4 font-semibold text-lg text-navy-900 flex items-center gap-2">
                                 {fullName || 'Usuário'}
+                                <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gold-300 text-white font-semibold">{role.toUpperCase()}</span>
                             </h3>
                             <p className="text-sm text-gray-500">{user.email}</p>
                         </CardContent>
