@@ -74,3 +74,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Google Charts tooltip fixes: ensure tooltips are visible above other elements
+   and are interactive (pointer events enabled). Use high specificity to avoid
+   being overridden by other UI styles. */
+.google-visualization-tooltip {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+/* Allow tooltip containers to not be clipped by parent elements */
+.google-visualization-tooltip, .google-visualization-tooltip table, .google-visualization-tooltip div {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+}

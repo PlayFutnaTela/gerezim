@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,21 +32,40 @@ export default function LoginPage({
     console.log('Tentando login com email:', email)
     const supabase = createClient()
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    if (error) {
-      console.error('Erro no login:', error.message)
-      toast.error('Email ou senha incorretos')
-    } else {
-      console.log('Login bem-sucedido para:', email)
-      toast.success('Login realizado com sucesso!')
-      window.location.href = '/dashboard'
+      if (error) {
+        console.error('Erro no login:', error.message)
+        // Distinguish auth error vs network
+        if (/Failed to fetch|NetworkError|ERR_NAME_NOT_RESOLVED/i.test(error.message)) {
+          toast.error('Falha ao conectar ao servidor de autenticação. Verifique sua conexão e NEXT_PUBLIC_SUPABASE_URL.')
+        } else {
+          toast.error('Email ou senha incorretos')
+        }
+      } else {
+        console.log('Login bem-sucedido para:', email)
+        toast.success('Login realizado com sucesso!')
+        window.location.href = '/dashboard'
+      }
+    } catch (err: any) {
+      console.error('Erro inesperado no login:', err)
+      toast.error('Falha ao conectar ao servidor de autenticação. Verifique NEXT_PUBLIC_SUPABASE_URL e sua conexão de rede.')
     }
     setLoading(false)
   }
+
+  // Dev-time check to detect missing/incorrect Supabase URL configuration
+  React.useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (!url || url.includes('YOUR_SUPABASE_URL') || url.includes('sua-url-do-projeto')) {
+      console.warn('NEXT_PUBLIC_SUPABASE_URL appears to be missing or not set. Check .env.local')
+      toast.error('Supabase URL não configurada (NEXT_PUBLIC_SUPABASE_URL). Veja README.md')
+    }
+  }, [])
 
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,20 +86,24 @@ export default function LoginPage({
     console.log('Tentando cadastro com email:', email)
     const supabase = createClient()
 
-    const { error } = await supabase.auth.signUp({
+    try {
+      const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/api/auth/callback`,
       },
     })
-
-    if (error) {
-      console.error('Erro no cadastro:', error.message)
-      toast.error('Erro ao criar conta: ' + error.message)
-    } else {
-      console.log('Cadastro iniciado para:', email)
-      toast.success('Verifique o email para confirmar o cadastro')
+      if (error) {
+        console.error('Erro no cadastro:', error.message)
+        toast.error('Erro ao criar conta: ' + error.message)
+      } else {
+        console.log('Cadastro iniciado para:', email)
+        toast.success('Verifique o email para confirmar o cadastro')
+      }
+    } catch (err: any) {
+      console.error('Erro inesperado no cadastro:', err)
+      toast.error('Falha ao conectar ao servidor de autenticação. Verifique NEXT_PUBLIC_SUPABASE_URL e sua conexão de rede.')
     }
     setLoading(false)
   }
@@ -98,16 +121,20 @@ export default function LoginPage({
     console.log('Tentando recuperação de senha para:', email)
     const supabase = createClient()
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/api/auth/callback?next=/auth/reset-password`,
     })
-
-    if (error) {
-      console.error('Erro na recuperação de senha:', error.message)
-      toast.error('Erro ao enviar email de recuperação')
-    } else {
-      console.log('Email de recuperação enviado para:', email)
-      toast.success('Email de recuperação enviado. Verifique sua caixa de entrada.')
+      if (error) {
+        console.error('Erro na recuperação de senha:', error.message)
+        toast.error('Erro ao enviar email de recuperação')
+      } else {
+        console.log('Email de recuperação enviado para:', email)
+        toast.success('Email de recuperação enviado. Verifique sua caixa de entrada.')
+      }
+    } catch (err: any) {
+      console.error('Erro inesperado na recuperação de senha:', err)
+      toast.error('Falha ao conectar ao servidor de autenticação. Verifique NEXT_PUBLIC_SUPABASE_URL e sua conexão de rede.')
     }
     setLoading(false)
   }

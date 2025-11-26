@@ -153,7 +153,7 @@ export default function DashboardCharts({
               easing: 'out'
             },
             tooltip: {
-              trigger: 'focus',
+              trigger: 'both',
               isHtml: true
             }
           };
@@ -199,7 +199,7 @@ export default function DashboardCharts({
               easing: 'out'
             },
             tooltip: {
-              trigger: 'focus',
+              trigger: 'both',
               isHtml: true
             }
           };
@@ -240,7 +240,7 @@ export default function DashboardCharts({
               easing: 'out'
             },
             tooltip: {
-              trigger: 'focus',
+              trigger: 'both',
               isHtml: true
             }
           };
@@ -291,7 +291,7 @@ export default function DashboardCharts({
               easing: 'out'
             },
             tooltip: {
-              trigger: 'focus',
+              trigger: 'both',
               isHtml: true
             }
           };
@@ -329,7 +329,7 @@ export default function DashboardCharts({
               easing: 'out'
             },
             tooltip: {
-              trigger: 'focus',
+              trigger: 'both',
               isHtml: true
             }
           };
@@ -375,7 +375,7 @@ export default function DashboardCharts({
               easing: 'out'
             },
             tooltip: {
-              trigger: 'focus',
+              trigger: 'both',
               isHtml: true
             }
           };
@@ -421,7 +421,7 @@ export default function DashboardCharts({
               easing: 'out'
             },
             tooltip: {
-              trigger: 'focus',
+              trigger: 'both',
               isHtml: true
             },
             pointSize: 5,
@@ -439,39 +439,38 @@ export default function DashboardCharts({
             console.warn('Google visualization DataTable not available — skipping pipeline chart')
           } else {
             const data = new google.visualization.DataTable();
-          data.addColumn('string', 'Estágio');
-          data.addColumn('number', 'Quantidade');
+            data.addColumn('string', 'Estágio');
+            data.addColumn('number', 'Quantidade');
 
-          pipelineData.forEach(item => {
-            data.addRow([item.name, item.value]);
-          });
+            pipelineData.forEach(item => {
+              data.addRow([item.name, item.value]);
+            });
 
-          const options = {
-            title: 'Pipeline de Vendas',
-            titleTextStyle: {
-              fontSize: 16,
-              bold: true
-            },
-            backgroundColor: '#ffffff',
-            legend: { position: 'none' },
-            colors: ['#3B82F6', '#1D4ED8', '#60A5FA', '#93C5FD', '#BFDBFE'],
-            animation: {
-              startup: true,
-              duration: 1000,
-              easing: 'out'
-            },
-            tooltip: {
-              trigger: 'focus',
-              isHtml: true
-            }
-          };
+            const options = {
+              title: 'Pipeline de Vendas',
+              titleTextStyle: {
+                fontSize: 16,
+                bold: true
+              },
+              backgroundColor: '#ffffff',
+              legend: { position: 'none' },
+              colors: ['#3B82F6', '#1D4ED8', '#60A5FA', '#93C5FD', '#BFDBFE'],
+              animation: {
+                startup: true,
+                duration: 1000,
+                easing: 'out'
+              },
+              tooltip: {
+                trigger: 'both',
+                isHtml: true
+              }
+            };
 
             const chart = new google.visualization.BarChart(pipelineRef.current);
             chart.draw(data, options);
           }
         }
-      }
-    };
+    }
 
     loadGoogleCharts();
   }, [opportunityData, topProducts, timelineData, pipelineData, conversionRateData, avgValueByCategoryData, valueDistributionData, topSellingProductsData]);
@@ -479,7 +478,7 @@ export default function DashboardCharts({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
       {/* Gráfico de Taxa de Conversão por Estágio do Funil */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Taxa de Conversão por Estágio do Funil</h3>
           <div className="tooltip-group relative">
@@ -497,7 +496,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Gráfico de Valor Médio por Oportunidade por Categoria */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Valor Médio por Oportunidade por Categoria</h3>
           <div className="tooltip-group relative">
@@ -515,7 +514,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Gráfico de Distribuição de Oportunidades por Valor */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Distribuição de Oportunidades por Valor</h3>
           <div className="tooltip-group relative">
@@ -533,7 +532,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Gráfico de Produtos Mais Vendidos */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Produtos Mais Vendidos</h3>
           <div className="tooltip-group relative">
@@ -551,7 +550,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Gráfico de pizza - Oportunidades por categoria */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Oportunidades por Categoria</h3>
           <div className="tooltip-group relative">
@@ -569,7 +568,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Top 5 produtos mais caros */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Top 5 produtos mais caros</h3>
           <div className="tooltip-group relative">
@@ -587,7 +586,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Gráfico de linhas - Evolução no Faturamento */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Evolução no Faturamento</h3>
           <div className="tooltip-group relative">
@@ -605,7 +604,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Gráfico de funnel - Pipeline de vendas */}
-      <div className="bg-white p-6 rounded-lg border">
+      <div className="bg-white p-6 rounded-lg border overflow-visible">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold mb-4 flex-grow">Pipeline de Vendas</h3>
           <div className="tooltip-group relative">

@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import {
-  Search, 
-  Filter, 
+  Search,
+  Filter,
   MapPin,
   Heart,
   Star,
@@ -171,7 +171,7 @@ export default function OpportunitiesStore({
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0 flex items-center justify-center">
-              <img src="/logo.png" alt="Gerezim logo" className="h-12 sm:h-14 md:h-16 lg:h-20 object-contain" style={{ height: 'auto' }} />
+              <img src="/logo.png" alt="Gerezim logo" className="h-5 sm:h-6 md:h-7 lg:h-8 object-contain" style={{ height: 'auto' }} />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gerezim</h1>
@@ -377,8 +377,8 @@ export default function OpportunitiesStore({
                   </div>
                   <Badge variant="outline">
                     {'status' in item && item.status === 'em_negociacao' ? 'Em negociação' :
-                     'status' in item && item.status === 'active' ? 'Ativo' :
-                     'status' in item ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Novo'}
+                      'status' in item && item.status === 'active' ? 'Ativo' :
+                        'status' in item ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Novo'}
                   </Badge>
                 </div>
               </CardHeader>
@@ -425,7 +425,7 @@ export default function OpportunitiesStore({
                       Ver detalhes
                     </Button>
                   </Link>
-                  <Button 
+                  <Button
                     onClick={() => handleWhatsApp(item)}
                     className="flex-1 bg-gold-500 text-white hover:bg-gold-600"
                   >
@@ -496,8 +496,8 @@ export default function OpportunitiesStore({
                     </div>
                     <Badge variant="outline">
                       {'status' in item && item.status === 'em_negociacao' ? 'Em negociação' :
-                       'status' in item && item.status === 'active' ? 'Ativo' :
-                       'status' in item ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Novo'}
+                        'status' in item && item.status === 'active' ? 'Ativo' :
+                          'status' in item ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Novo'}
                     </Badge>
                   </div>
 
@@ -544,7 +544,7 @@ export default function OpportunitiesStore({
                         Ver detalhes
                       </Button>
                     </Link>
-                    <Button 
+                    <Button
                       onClick={() => handleWhatsApp(item)}
                       className="bg-gold-500 text-white hover:bg-gold-600"
                     >
