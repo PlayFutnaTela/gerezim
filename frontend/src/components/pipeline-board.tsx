@@ -47,50 +47,93 @@ export default function PipelineBoard({ initialOpportunities }: Props) {
 
     const supabase = createClient()
 
+    // Load enriched data on mount
+    React.useEffect(() => {
+        refreshOpportunities()
+    }, [])
+
     async function refreshOpportunities() {
-        // Fetch with joins to get avatar and product thumbnail
-        const { data } = await supabase
-            .from('opportunities')
-            .select(`
-        *,
-        contacts:contact_id (name, user_id),
-        products:product_id (title, images)
-      `)
-            .order('created_at', { ascending: false })
+        try {
+            // Fetch opportunities with basic data
+            const { data: opps, error } = await supabase
+                .from('opportunities')
+                .select('*')
+                .order('created_at', { ascending: false })
 
-        if (data) {
-            // For each opportunity, fetch avatar from profiles if contact exists
+            if (error) {
+                console.error('Error fetching opportunities:', error)
+                return
+            }
+
+            if (!opps || opps.length === 0) {
+                setOpportunities([])
+                return
+            }
+
+            // Enrich each opportunity with contact and product data
             const enrichedData = await Promise.all(
-                data.map(async (opp: any) => {
+                opps.map(async (opp: any) => {
+                    let contact_name = null
                     let contact_avatar = null
+                    let product_title = null
+                    let product_images = null
 
-                    if (opp.contacts?.user_id) {
-                        const { data: profile } = await supabase
-                            .from('profiles')
-                            .select('avatar_url')
-                            .eq('id', opp.contacts.user_id)
+                    // Fetch contact data if contact_id exists
+                    if (opp.contact_id) {
+                        const { data: contact } = await supabase
+                            .from('contacts')
+                            .select('name, user_id')
+                            .eq('id', opp.contact_id)
                             .single()
 
-                        if (profile?.avatar_url) {
-                            // Get public URL
-                            const { data: publicData } = supabase.storage
-                                .from('avatars')
-                                .getPublicUrl(profile.avatar_url)
-                            contact_avatar = publicData.publicUrl
+                        if (contact) {
+                            contact_name = contact.name
+
+                            // Try to fetch avatar from profiles
+                            if (contact.user_id) {
+                                const { data: profile } = await supabase
+                                    .from('profiles')
+                                    .select('avatar_url')
+                                    .eq('id', contact.user_id)
+                                    .single()
+
+                                if (profile?.avatar_url) {
+                                    const { data: publicData } = supabase.storage
+                                        .from('avatars')
+                                        .getPublicUrl(profile.avatar_url)
+                                    contact_avatar = publicData.publicUrl
+                                }
+                            }
+                        }
+                    }
+
+                    // Fetch product data if product_id exists
+                    if (opp.product_id) {
+                        const { data: product } = await supabase
+                            .from('products')
+                            .select('title, images')
+                            .eq('id', opp.product_id)
+                            .single()
+
+                        if (product) {
+                            product_title = product.title
+                            product_images = product.images
                         }
                     }
 
                     return {
                         ...opp,
-                        contact_name: opp.contacts?.name,
+                        contact_name,
                         contact_avatar,
-                        product_title: opp.products?.title,
-                        product_images: opp.products?.images,
+                        product_title,
+                        product_images,
                     }
                 })
             )
 
             setOpportunities(enrichedData)
+        } catch (error) {
+            console.error('Error in refreshOpportunities:', error)
         }
     }
 
