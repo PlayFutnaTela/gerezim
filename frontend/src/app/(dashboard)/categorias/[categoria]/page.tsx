@@ -14,16 +14,27 @@ type Props = {
 export default async function CategoriaPage({ params }: Props) {
     const supabase = createClient()
 
-    // Convert URL slug back to category name
+    // Map URL slug to proper category name
+    const categorySlugMap: Record<string, string> = {
+        'carros-de-luxo': 'Carros de Luxo',
+        'imoveis': 'Imóveis',
+        'empresas': 'Empresas',
+        'premium': 'Premium',
+        'eletronicos': 'Eletrônicos',
+        'cartas-contempladas': 'Cartas Contempladas',
+        'industrias': 'Indústrias',
+        'embarcacoes': 'Embarcações'
+    }
+
     const categorySlug = params.categoria
-    const categoryName = categorySlug.replace(/-/g, ' ')
+    const categoryName = categorySlugMap[categorySlug] || categorySlug.replace(/-/g, ' ')
 
     // Fetch products for this category
     const { data: products, error } = await supabase
         .from('products')
         .select('*')
         .eq('status', 'active')
-        .ilike('category', categoryName)
+        .eq('category', categoryName)
         .order('created_at', { ascending: false })
 
     if (error) {
@@ -43,7 +54,7 @@ export default async function CategoriaPage({ params }: Props) {
                 </Link>
 
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold tracking-tight text-gold-500 capitalize">
+                    <h1 className="text-4xl font-bold tracking-tight text-gold-500">
                         {categoryName}
                     </h1>
                     <p className="text-muted-foreground mt-2">

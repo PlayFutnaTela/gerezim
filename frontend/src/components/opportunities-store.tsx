@@ -231,7 +231,20 @@ export default function OpportunitiesStore({
     window.open(whatsappUrl, '_blank')
   }
 
-  const categories = ['all', 'carro', 'imovel', 'empresa', 'Premium', 'eletronicos', 'Cartas Contempladas', 'Industrias', 'Embarcações']
+
+  const categories = ['all', 'Carros de Luxo', 'Imóveis', 'Empresas', 'Premium', 'Eletrônicos', 'Cartas Contempladas', 'Indústrias', 'Embarcações']
+
+  // Map for category icons
+  const categoryIcons: Record<string, string> = {
+    'Carros de Luxo': '/icones-categorias/carros.png',
+    'Imóveis': '/icones-categorias/imoveis.png',
+    'Empresas': '/icones-categorias/empresas.png',
+    'Premium': '/icones-categorias/premium.png',
+    'Eletrônicos': '/icones-categorias/eletronicos.png',
+    'Cartas Contempladas': '/icones-categorias/Cartascontempladas.png',
+    'Indústrias': '/icones-categorias/industrias.png',
+    'Embarcações': '/icones-categorias/embarcacoes.png'
+  }
   const statuses = ['all', 'novo', 'em_negociacao', 'vendido', 'Ativo']
   const types = [
     { value: 'all', label: 'Todos' },
@@ -321,17 +334,7 @@ export default function OpportunitiesStore({
                 {/* Category Icon Image */}
                 <div className="w-16 h-16 flex items-center justify-center">
                   <img
-                    src={
-                      category === 'carro' ? '/icones-categorias/carros.png' :
-                        category === 'imovel' ? '/icones-categorias/imoveis.png' :
-                          category === 'empresa' ? '/icones-categorias/empresas.png' :
-                            category === 'Premium' ? '/icones-categorias/premium.png' :
-                              category === 'eletronicos' ? '/icones-categorias/eletronicos.png' :
-                                category === 'Cartas Contempladas' ? '/icones-categorias/Cartascontempladas.png' :
-                                  category === 'Industrias' ? '/icones-categorias/industrias.png' :
-                                    category === 'Embarcações' ? '/icones-categorias/embarcacoes.png' :
-                                      '/icones-categorias/premium.png'
-                    }
+                    src={categoryIcons[category] || '/icones-categorias/premium.png'}
                     alt={category}
                     className="w-full h-full object-contain"
                   />
@@ -390,7 +393,7 @@ export default function OpportunitiesStore({
                 <SelectContent>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
-                      {category === 'all' ? 'Todas as categorias' : category.charAt(0).toUpperCase() + category.slice(1)}
+                      {category === 'all' ? 'Todas as categorias' : category}
                     </SelectItem>
                   ))}
                 </SelectContent>
