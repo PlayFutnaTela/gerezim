@@ -41,6 +41,11 @@ export default async function ConciergePage() {
         .from('concierge_settings')
         .select('*')
 
+    const { data: profiles } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name', { ascending: true })
+
     const webhookUrl = settings?.find(s => s.key === 'webhook_url')?.value || ''
 
     return (
@@ -54,6 +59,7 @@ export default async function ConciergePage() {
                         initialConversations={conversations || []}
                         initialWebhookUrl={webhookUrl}
                         user={user}
+                        profiles={profiles || []}
                     />
                 </div>
             </main>

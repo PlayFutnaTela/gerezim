@@ -22,6 +22,7 @@ interface Conversation {
     title: string
     folder_id: string | null
     updated_at: string
+    client_id: string | null
 }
 
 interface ConciergeLayoutClientProps {
@@ -29,13 +30,15 @@ interface ConciergeLayoutClientProps {
     initialConversations: Conversation[]
     initialWebhookUrl: string
     user: any
+    profiles: any[]
 }
 
 export default function ConciergeLayoutClient({
     initialFolders,
     initialConversations,
     initialWebhookUrl,
-    user
+    user,
+    profiles
 }: ConciergeLayoutClientProps) {
     const [folders, setFolders] = useState<Folder[]>(initialFolders)
     const [conversations, setConversations] = useState<Conversation[]>(initialConversations)
@@ -181,6 +184,25 @@ export default function ConciergeLayoutClient({
                         conversationId={selectedConversationId}
                         webhookUrl={webhookUrl}
                         conversationTitle={conversations.find(c => c.id === selectedConversationId)?.title || 'Conversa'}
+                        clientId={conversations.find(c => c.id === selectedConversationId)?.client_id || null}
+                        profiles={profiles}
+                        onClientChange={async (clientId) => {
+                            const { error } = await supabase
+                                .from('concierge_conversations')
+                                .update({ client_id: clientId })
+                                .eq('id', selectedConversationId)
+
+                            if (!error) {
+                                setConversations(conversations.map(c =>
+                                    c.id === selectedConversationId
+                                        ? { ...c, client_id: clientId }
+                                        : c
+                                ))
+                                toast.success('Cliente vinculado')
+                            } else {
+                                toast.error('Erro ao vincular cliente')
+                            }
+                        }}
                     />
                 ) : (
                     <div className="flex-1 flex items-center justify-center text-slate-400">

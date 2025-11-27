@@ -5,6 +5,13 @@ import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 interface Message {
     id: string
@@ -17,9 +24,12 @@ interface ChatAreaProps {
     conversationId: string
     conversationTitle: string
     webhookUrl: string
+    clientId: string | null
+    profiles: any[]
+    onClientChange: (clientId: string) => void
 }
 
-export function ChatArea({ conversationId, conversationTitle, webhookUrl }: ChatAreaProps) {
+export function ChatArea({ conversationId, conversationTitle, webhookUrl, clientId, profiles, onClientChange }: ChatAreaProps) {
     const [messages, setMessages] = useState<Message[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -128,6 +138,21 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl }: Chat
             {/* Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
                 <h2 className="font-semibold text-lg text-slate-800">{conversationTitle}</h2>
+                <div className="flex items-center gap-2">
+                    <Select value={clientId || "none"} onValueChange={(value) => onClientChange(value === "none" ? "" : value)}>
+                        <SelectTrigger className="w-[200px] bg-slate-50 border-slate-200 text-slate-900">
+                            <SelectValue placeholder="Vincular Cliente" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-slate-200">
+                            <SelectItem value="none" className="text-slate-500">Nenhum cliente</SelectItem>
+                            {profiles.map((profile) => (
+                                <SelectItem key={profile.id} value={profile.id} className="text-slate-900 focus:bg-gold-50 focus:text-gold-900">
+                                    {profile.full_name || profile.email || 'Sem nome'}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             {/* Messages */}
