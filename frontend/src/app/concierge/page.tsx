@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import ConciergeLayoutClient from './layout-client'
 import Sidebar from '@/components/sidebar'
 import Topbar from '@/components/topbar'
+import { ConciergeMobileMenu } from './components/mobile-menu'
 
 export default async function ConciergePage() {
     const supabase = createClient()
@@ -50,10 +51,13 @@ export default async function ConciergePage() {
 
     return (
         <div className="flex min-h-screen bg-navy-900">
-            <Sidebar />
-            <main className="flex-1 ml-[12.8rem] flex flex-col h-screen overflow-hidden">
+            <div className="hidden md:flex">
+                <Sidebar />
+            </div>
+
+            <main className="flex-1 ml-0 md:ml-[12.8rem] flex flex-col h-screen overflow-hidden relative">
                 <Topbar user={user} />
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden pb-20 md:pb-0">
                     <ConciergeLayoutClient
                         initialFolders={folders || []}
                         initialConversations={conversations || []}
@@ -62,6 +66,9 @@ export default async function ConciergePage() {
                         profiles={profiles || []}
                     />
                 </div>
+
+                {/* Mobile Menu */}
+                <ConciergeMobileMenu />
             </main>
         </div>
     )

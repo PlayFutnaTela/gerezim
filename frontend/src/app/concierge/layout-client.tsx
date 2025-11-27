@@ -7,9 +7,10 @@ import { FolderList } from './components/folder-list'
 import { ChatArea } from './components/chat-area'
 import { WebhookSettings } from './components/webhook-settings'
 import { Button } from '@/components/ui/button'
-import { Settings, Plus, FolderPlus } from 'lucide-react'
+import { Settings, Plus, FolderPlus, PanelLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 interface Folder {
     id: string
@@ -45,6 +46,7 @@ export default function ConciergeLayoutClient({
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const [webhookUrl, setWebhookUrl] = useState(initialWebhookUrl)
+    const [showSidebar, setShowSidebar] = useState(true)
     const supabase = createClient()
 
     const sensors = useSensors(
@@ -53,6 +55,13 @@ export default function ConciergeLayoutClient({
             coordinateGetter: sortableKeyboardCoordinates,
         })
     )
+
+    // Auto-close sidebar on mobile when conversation is selected
+    useEffect(() => {
+        if (window.innerWidth < 768 && selectedConversationId) {
+            setShowSidebar(false)
+        }
+    }, [selectedConversationId])
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event
@@ -114,12 +123,19 @@ export default function ConciergeLayoutClient({
     }
 
     return (
-        <div className="flex h-full bg-slate-50 text-slate-900 overflow-hidden">
+        <div className="flex h-full bg-slate-50 text-slate-900 overflow-hidden relative">
             {/* Sidebar / Folder List */}
-            <div className="w-80 flex flex-col border-r border-slate-200 bg-white">
+            <div className={cn(
+                "flex-col border-r border-slate-200 bg-white transition-all duration-300",
+                "md:flex md:w-80 md:relative", // Desktop styles
+                showSidebar ? "absolute inset-0 z-40 w-full flex" : "hidden" // Mobile styles
+            )}>
                 <div className="p-4 border-b border-slate-200 flex items-center justify-between">
                     <h2 className="font-semibold text-lg text-slate-800">Conversas</h2>
                     <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)} className="md:hidden text-slate-500 hover:text-slate-700">
+                            <PanelLeft className="h-5 w-5" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={createFolder} title="Nova Pasta" className="hover:text-gold-500 hover:bg-gold-50">
                             <FolderPlus className="h-5 w-5 text-gold-500" />
                         </Button>
@@ -178,7 +194,7 @@ export default function ConciergeLayoutClient({
             </div>
 
             {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col bg-slate-50 min-h-0">
+            <div className="flex-1 flex flex-col bg-slate-50 min-h-0 w-full">
                 {selectedConversationId ? (
                     <ChatArea
                         conversationId={selectedConversationId}
@@ -203,10 +219,14 @@ export default function ConciergeLayoutClient({
                                 toast.error('Erro ao vincular cliente')
                             }
                         }}
+                        onToggleSidebar={() => setShowSidebar(true)}
                     />
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-slate-400">
-                        Selecione uma conversa para começar
+                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-4">
+                        <p>Selecione uma conversa para começar</p>
+                        <Button variant="outline" onClick={() => setShowSidebar(true)} className="md:hidden">
+                            Ver Conversas
+                        </Button>
                     </div>
                 )}
             </div>

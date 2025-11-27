@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Send, Bot, User, Loader2 } from 'lucide-react'
+import { Send, Bot, User, Loader2, PanelLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
@@ -28,9 +28,10 @@ interface ChatAreaProps {
     clientId: string | null
     profiles: any[]
     onClientChange: (clientId: string) => void
+    onToggleSidebar?: () => void
 }
 
-export function ChatArea({ conversationId, conversationTitle, webhookUrl, clientId, profiles, onClientChange }: ChatAreaProps) {
+export function ChatArea({ conversationId, conversationTitle, webhookUrl, clientId, profiles, onClientChange, onToggleSidebar }: ChatAreaProps) {
     const [messages, setMessages] = useState<Message[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -175,7 +176,14 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
         <div className="flex flex-col h-full">
             {/* Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
-                <h2 className="font-semibold text-lg text-slate-800">{conversationTitle}</h2>
+                <div className="flex items-center gap-3">
+                    {onToggleSidebar && (
+                        <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="md:hidden text-slate-500 hover:text-slate-700">
+                            <PanelLeft className="h-5 w-5" />
+                        </Button>
+                    )}
+                    <h2 className="font-semibold text-lg text-slate-800">{conversationTitle}</h2>
+                </div>
                 <div className="flex items-center gap-2">
                     <Select value={clientId || "none"} onValueChange={(value) => onClientChange(value === "none" ? "" : value)}>
                         <SelectTrigger className="w-[200px] bg-slate-50 border-slate-200 text-slate-900">
