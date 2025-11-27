@@ -95,13 +95,22 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl }: Chat
                 throw new Error('Webhook failed')
             }
 
-            const data = await response.json()
+            const text = await response.text()
+            let reply = ''
+
+            try {
+                const data = JSON.parse(text)
+                reply = data.reply || data.message || JSON.stringify(data)
+            } catch (e) {
+                // If not JSON, treat the whole text as the reply
+                reply = text
+            }
 
             // 3. Save bot response
-            if (data.reply) {
+            if (reply) {
                 await supabase.from('concierge_messages').insert({
                     conversation_id: conversationId,
-                    content: data.reply,
+                    content: reply,
                     sender: 'bot'
                 })
             }
@@ -122,7 +131,7 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl }: Chat
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 min-h-0 scrollbar-thin scrollbar-thumb-gold-200 scrollbar-track-transparent hover:scrollbar-thumb-gold-300">
                 {messages.map((msg) => (
                     <div
                         key={msg.id}

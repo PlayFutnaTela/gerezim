@@ -175,7 +175,7 @@ export default function ConciergeLayoutClient({
             </div>
 
             {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col bg-slate-50">
+            <div className="flex-1 flex flex-col bg-slate-50 min-h-0">
                 {selectedConversationId ? (
                     <ChatArea
                         conversationId={selectedConversationId}
