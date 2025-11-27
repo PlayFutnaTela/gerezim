@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { LayoutDashboard, Briefcase, Users, KanbanSquare, BarChart3, LogOut, ShoppingCart, User, FileText, Heart } from "lucide-react"
+import { LayoutDashboard, Briefcase, Users, KanbanSquare, BarChart3, LogOut, ShoppingCart, User, FileText, Heart, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import Image from "next/image"
@@ -100,6 +100,15 @@ export default async function Sidebar() {
             >
               <BarChart3 className="h-4 w-4 text-gold-300" />
               Relatórios
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              href="/concierge"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-white/70 transition-all hover:text-white hover:bg-navy-600"
+            >
+              <MessageSquare className="h-4 w-4 text-gold-300" />
+              Concierge GME
             </Link>
           )}
           <Link
