@@ -111,20 +111,22 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
                 .select()
                 .single()
 
-            if (saveError) throw saveError
-
             // Update temp message with real ID from DB
             setMessages(prev => prev.map(m => m.id === tempUserMessage.id ? savedUserMsg : m))
 
-            // 2. Call Webhook
-            const response = await fetch(webhookUrl, {
+            // 2. Call Webhook (via Proxy)
+            const response = await fetch('/api/concierge/webhook', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
-                    conversation_id: conversationId,
+                    url: webhookUrl,
                     message: userMessageContent,
-                    timestamp: new Date().toISOString()
-                })
+                    conversation_id: conversationId,
+                    client_id: clientId,
+                    user_email: profiles.find(p => p.id === clientId)?.email || 'unknown'
+                }),
             })
 
             if (!response.ok) {
