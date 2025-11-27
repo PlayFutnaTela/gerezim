@@ -19,6 +19,8 @@ import {
   List,
   User
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 import { TextRotate } from '@/style/efect-hover-text'
 import ImageHeroCarousel from './image-hero-carousel'
@@ -81,6 +83,33 @@ export default function OpportunitiesStore({
   const [sortOption, setSortOption] = useState('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [favorites, setFavorites] = useState<Set<string>>(new Set<string>())
+
+  const supabase = createClient()
+
+  // Load user favorites on mount
+  useEffect(() => {
+    loadFavorites()
+  }, [])
+
+  async function loadFavorites() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('product_id')
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      if (data) {
+        setFavorites(new Set(data.map(fav => fav.product_id)))
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error)
+    }
+  }
 
   // Filter and sort items (opportunities and products)
   useEffect(() => {
@@ -145,14 +174,50 @@ export default function OpportunitiesStore({
     setFilteredItems(result)
   }, [searchTerm, selectedCategory, selectedStatus, selectedType, sortOption, opportunities, products])
 
-  const toggleFavorite = (id: string) => {
+  async function toggleFavorite(productId: string) {
+    const isFavorited = favorites.has(productId)
+
+    // Optimistic UI update
     const newFavorites = new Set(favorites)
-    if (newFavorites.has(id)) {
-      newFavorites.delete(id)
+    if (isFavorited) {
+      newFavorites.delete(productId)
     } else {
-      newFavorites.add(id)
+      newFavorites.add(productId)
     }
     setFavorites(newFavorites)
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('Você precisa estar logado para favoritar')
+        setFavorites(favorites) // Revert
+        return
+      }
+
+      if (isFavorited) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('product_id', productId)
+          .eq('user_id', user.id)
+
+        if (error) throw error
+        toast.success('Removido dos favoritos')
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('favorites')
+          .insert({ product_id: productId, user_id: user.id })
+
+        if (error) throw error
+        toast.success('Adicionado aos favoritos')
+      }
+    } catch (error: any) {
+      // Revert on error
+      setFavorites(favorites)
+      toast.error('Erro ao favoritar: ' + error.message)
+    }
   }
 
   const handleWhatsApp = (item: Opportunity | Product) => {
@@ -189,7 +254,7 @@ export default function OpportunitiesStore({
               />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gerezim</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gold-500">Gerezim</h1>
               <div className="text-muted-foreground mt-1">
                 <TextRotate
                   texts={["Negócios exclusivos", "Oportunidades únicas", "Produtos Premium"]}
