@@ -7,18 +7,24 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import AddOpportunityModal from './add-opportunity-modal'
+import EditOpportunityModal from './edit-opportunity-modal'
+import { User, Package } from 'lucide-react'
 
 type Opportunity = {
     id: string
     title: string
     category: string
     value: number
-    location?: string
     pipeline_stage: string
     created_at: string
     notes?: string
     contact_id?: string
     product_id?: string
+    // Joined data
+    contact_name?: string
+    contact_avatar?: string
+    product_images?: string[]
+    product_title?: string
 }
 
 type Props = {
@@ -37,16 +43,55 @@ export default function PipelineBoard({ initialOpportunities }: Props) {
     const [opportunities, setOpportunities] = useState<Opportunity[]>(initialOpportunities)
     const [draggingId, setDraggingId] = useState<string | null>(null)
     const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
+    const [editingOpportunity, setEditingOpportunity] = useState<Opportunity | null>(null)
 
     const supabase = createClient()
 
     async function refreshOpportunities() {
+        // Fetch with joins to get avatar and product thumbnail
         const { data } = await supabase
             .from('opportunities')
-            .select('*')
+            .select(`
+        *,
+        contacts:contact_id (name, user_id),
+        products:product_id (title, images)
+      `)
             .order('created_at', { ascending: false })
 
-        if (data) setOpportunities(data)
+        if (data) {
+            // For each opportunity, fetch avatar from profiles if contact exists
+            const enrichedData = await Promise.all(
+                data.map(async (opp: any) => {
+                    let contact_avatar = null
+
+                    if (opp.contacts?.user_id) {
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('avatar_url')
+                            .eq('id', opp.contacts.user_id)
+                            .single()
+
+                        if (profile?.avatar_url) {
+                            // Get public URL
+                            const { data: publicData } = supabase.storage
+                                .from('avatars')
+                                .getPublicUrl(profile.avatar_url)
+                            contact_avatar = publicData.publicUrl
+                        }
+                    }
+
+                    return {
+                        ...opp,
+                        contact_name: opp.contacts?.name,
+                        contact_avatar,
+                        product_title: opp.products?.title,
+                        product_images: opp.products?.images,
+                    }
+                })
+            )
+
+            setOpportunities(enrichedData)
+        }
     }
 
     function handleDragStart(e: React.DragEvent, oppId: string) {
@@ -95,7 +140,6 @@ export default function PipelineBoard({ initialOpportunities }: Props) {
         )
 
         try {
-            // Update in database
             const { error } = await supabase
                 .from('opportunities')
                 .update({ pipeline_stage: targetStage })
@@ -105,7 +149,6 @@ export default function PipelineBoard({ initialOpportunities }: Props) {
 
             toast.success(`Oportunidade movida para "${COLUMNS.find(c => c.id === targetStage)?.title}"`)
         } catch (error: any) {
-            // Revert on error
             setOpportunities(prev =>
                 prev.map(opp =>
                     opp.id === draggingId
@@ -119,12 +162,20 @@ export default function PipelineBoard({ initialOpportunities }: Props) {
         setDraggingId(null)
     }
 
+    function handleCardClick(e: React.MouseEvent, opp: Opportunity) {
+        // Only open edit if not dragging
+        if (!draggingId) {
+            e.stopPropagation()
+            setEditingOpportunity(opp)
+        }
+    }
+
     return (
         <div className="h-full flex flex-col space-y-4">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Pipeline de Vendas</h1>
                 <p className="text-muted-foreground mt-1">
-                    Arraste e solte os cards para mudar o estágio ou clique no + para criar nova oportunidade
+                    Arraste e solte os cards · Clique no + para criar · Clique no card para editar
                 </p>
             </div>
 
@@ -171,42 +222,107 @@ export default function PipelineBoard({ initialOpportunities }: Props) {
                                             Nenhuma oportunidade
                                         </div>
                                     ) : (
-                                        columnOpportunities.map((opp) => (
-                                            <Card
-                                                key={opp.id}
-                                                draggable
-                                                onDragStart={(e) => handleDragStart(e, opp.id)}
-                                                onDragEnd={handleDragEnd}
-                                                className={cn(
-                                                    "cursor-grab active:cursor-grabbing hover:shadow-md transition-all",
-                                                    draggingId === opp.id && "opacity-50 rotate-2"
-                                                )}
-                                            >
-                                                <CardHeader className="p-4 pb-2">
-                                                    <div className="flex justify-between items-start">
-                                                        <Badge variant="outline" className="text-[10px]">
-                                                            {opp.category || 'Sem categoria'}
-                                                        </Badge>
-                                                    </div>
-                                                    <CardTitle className="text-sm font-medium leading-tight mt-2">
-                                                        {opp.title}
-                                                    </CardTitle>
-                                                </CardHeader>
-                                                <CardContent className="p-4 pt-2">
-                                                    <div className="text-sm font-bold text-slate-700">
-                                                        {new Intl.NumberFormat('pt-BR', {
-                                                            style: 'currency',
-                                                            currency: 'BRL'
-                                                        }).format(opp.value)}
-                                                    </div>
-                                                    {opp.notes && (
-                                                        <div className="text-xs text-slate-500 mt-1 truncate">
-                                                            {opp.notes}
-                                                        </div>
+                                        columnOpportunities.map((opp) => {
+                                            const productThumbnail = opp.product_images?.[0]
+                                            const hasAvatar = !!opp.contact_avatar
+
+                                            return (
+                                                <Card
+                                                    key={opp.id}
+                                                    draggable
+                                                    onDragStart={(e) => handleDragStart(e, opp.id)}
+                                                    onDragEnd={handleDragEnd}
+                                                    onClick={(e) => handleCardClick(e, opp)}
+                                                    className={cn(
+                                                        "cursor-pointer transition-all duration-200 relative overflow-hidden",
+                                                        "shadow-[0_2px_8px_rgba(197,154,0,0.2)]",
+                                                        "hover:shadow-[0_4px_16px_rgba(197,154,0,0.35)] hover:-translate-y-1",
+                                                        "active:cursor-grabbing",
+                                                        draggingId === opp.id && "opacity-50 rotate-2"
                                                     )}
-                                                </CardContent>
-                                            </Card>
-                                        ))
+                                                >
+                                                    {/* Product thumbnail as background */}
+                                                    {productThumbnail && (
+                                                        <div
+                                                            className="absolute inset-0 bg-cover bg-center opacity-5"
+                                                            style={{ backgroundImage: `url(${productThumbnail})` }}
+                                                        />
+                                                    )}
+
+                                                    <CardHeader className="p-4 pb-2 relative z-10">
+                                                        <div className="flex justify-between items-start gap-2">
+                                                            {/* Avatar */}
+                                                            <div className="flex-shrink-0">
+                                                                {hasAvatar ? (
+                                                                    <img
+                                                                        src={opp.contact_avatar}
+                                                                        alt={opp.contact_name || 'Cliente'}
+                                                                        className="w-10 h-10 rounded-full object-cover border-2 border-gold-300"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-10 h-10 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center">
+                                                                        <User size={20} className="text-slate-400" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Category badge */}
+                                                            <Badge variant="outline" className="text-[10px] flex-shrink-0">
+                                                                {opp.category || 'Sem categoria'}
+                                                            </Badge>
+                                                        </div>
+
+                                                        <CardTitle className="text-sm font-medium leading-tight mt-2">
+                                                            {opp.title}
+                                                        </CardTitle>
+
+                                                        {opp.contact_name && (
+                                                            <div className="text-xs text-slate-500 mt-1">
+                                                                {opp.contact_name}
+                                                            </div>
+                                                        )}
+                                                    </CardHeader>
+
+                                                    <CardContent className="p-4 pt-2 relative z-10">
+                                                        <div className="text-sm font-bold text-slate-700">
+                                                            {new Intl.NumberFormat('pt-BR', {
+                                                                style: 'currency',
+                                                                currency: 'BRL'
+                                                            }).format(opp.value)}
+                                                        </div>
+
+                                                        {opp.notes && (
+                                                            <div className="text-xs text-slate-500 mt-1 truncate">
+                                                                📝 {opp.notes}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Product thumbnail preview */}
+                                                        {productThumbnail && (
+                                                            <div className="mt-2 flex items-center gap-2">
+                                                                <img
+                                                                    src={productThumbnail}
+                                                                    alt={opp.product_title || 'Produto'}
+                                                                    className="w-12 h-12 rounded object-cover border border-slate-200"
+                                                                />
+                                                                {opp.product_title && (
+                                                                    <div className="text-xs text-slate-600 truncate flex-1">
+                                                                        {opp.product_title}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {!productThumbnail && opp.product_title && (
+                                                            <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                                                                <Package size={14} />
+                                                                <span className="truncate">{opp.product_title}</span>
+                                                            </div>
+                                                        )}
+                                                    </CardContent>
+                                                </Card>
+                                            )
+                                        })
                                     )}
                                 </div>
                             </div>
@@ -214,6 +330,19 @@ export default function PipelineBoard({ initialOpportunities }: Props) {
                     })}
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            {editingOpportunity && (
+                <EditOpportunityModal
+                    opportunity={editingOpportunity}
+                    isOpen={!!editingOpportunity}
+                    onClose={() => setEditingOpportunity(null)}
+                    onSuccess={() => {
+                        refreshOpportunities()
+                        setEditingOpportunity(null)
+                    }}
+                />
+            )}
         </div>
     )
 }
