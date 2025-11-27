@@ -12,6 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { TypingIndicator } from './typing-indicator'
 
 interface Message {
     id: string
@@ -36,8 +37,8 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
 
+    // 1. Fetch initial messages
     useEffect(() => {
-        // Fetch messages
         const fetchMessages = async () => {
             const { data } = await supabase
                 .from('concierge_messages')
@@ -49,12 +50,19 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
         }
 
         fetchMessages()
+    }, [conversationId, supabase])
 
-        // Realtime subscription
+    // 2. Realtime subscription (deduplicated)
+    useEffect(() => {
         const channel = supabase
             .channel(`chat:${conversationId}`)
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'concierge_messages', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
-                setMessages((prev) => [...prev, payload.new as Message])
+                const newMessage = payload.new as Message
+                setMessages((prev) => {
+                    // Prevent duplicates (especially from optimistic updates)
+                    if (prev.some(m => m.id === newMessage.id)) return prev
+                    return [...prev, newMessage]
+                })
             })
             .subscribe()
 
@@ -63,11 +71,12 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
         }
     }, [conversationId, supabase])
 
+    // Scroll to bottom on new messages
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
         }
-    }, [messages])
+    }, [messages, isLoading])
 
     const sendMessage = async () => {
         if (!newMessage.trim()) return
@@ -76,19 +85,35 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
             return
         }
 
-        const userMessage = newMessage
+        const userMessageContent = newMessage
         setNewMessage('')
         setIsLoading(true)
 
+        // Optimistic update for user message
+        const tempUserMessage: Message = {
+            id: crypto.randomUUID(),
+            content: userMessageContent,
+            sender: 'user',
+            created_at: new Date().toISOString()
+        }
+        setMessages(prev => [...prev, tempUserMessage])
+
         try {
-            // 1. Save user message
-            const { error: saveError } = await supabase.from('concierge_messages').insert({
-                conversation_id: conversationId,
-                content: userMessage,
-                sender: 'user'
-            })
+            // 1. Save user message to DB
+            const { data: savedUserMsg, error: saveError } = await supabase
+                .from('concierge_messages')
+                .insert({
+                    conversation_id: conversationId,
+                    content: userMessageContent,
+                    sender: 'user'
+                })
+                .select()
+                .single()
 
             if (saveError) throw saveError
+
+            // Update temp message with real ID from DB
+            setMessages(prev => prev.map(m => m.id === tempUserMessage.id ? savedUserMsg : m))
 
             // 2. Call Webhook
             const response = await fetch(webhookUrl, {
@@ -96,7 +121,7 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     conversation_id: conversationId,
-                    message: userMessage,
+                    message: userMessageContent,
                     timestamp: new Date().toISOString()
                 })
             })
@@ -112,22 +137,35 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
                 const data = JSON.parse(text)
                 reply = data.reply || data.message || JSON.stringify(data)
             } catch (e) {
-                // If not JSON, treat the whole text as the reply
                 reply = text
             }
 
-            // 3. Save bot response
+            // 3. Save bot response to DB
             if (reply) {
-                await supabase.from('concierge_messages').insert({
-                    conversation_id: conversationId,
-                    content: reply,
-                    sender: 'bot'
+                const { data: savedBotMsg, error: botError } = await supabase
+                    .from('concierge_messages')
+                    .insert({
+                        conversation_id: conversationId,
+                        content: reply,
+                        sender: 'bot'
+                    })
+                    .select()
+                    .single()
+
+                if (botError) throw botError
+
+                // Manually add bot message to state (Optimistic-ish)
+                setMessages(prev => {
+                    if (prev.some(m => m.id === savedBotMsg.id)) return prev
+                    return [...prev, savedBotMsg]
                 })
             }
 
         } catch (error) {
             console.error(error)
             toast.error('Erro ao enviar mensagem')
+            // Rollback optimistic update if failed
+            setMessages(prev => prev.filter(m => m.id !== tempUserMessage.id))
         } finally {
             setIsLoading(false)
         }
@@ -177,10 +215,11 @@ export function ChatArea({ conversationId, conversationTitle, webhookUrl, client
                         </div>
                     </div>
                 ))}
+
                 {isLoading && (
-                    <div className="flex w-full justify-start">
-                        <div className="bg-white border border-slate-200 rounded-lg p-3 rounded-bl-none shadow-sm">
-                            <Loader2 className="h-4 w-4 animate-spin text-gold-500" />
+                    <div className="flex w-full justify-start animate-in fade-in duration-300">
+                        <div className="bg-white border border-slate-200 rounded-lg rounded-bl-none shadow-sm">
+                            <TypingIndicator />
                         </div>
                     </div>
                 )}
