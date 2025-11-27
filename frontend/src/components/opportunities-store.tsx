@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 import { TextRotate } from '@/style/efect-hover-text'
 import ImageHeroCarousel from './image-hero-carousel'
@@ -298,6 +299,46 @@ export default function OpportunitiesStore({
           <div className="w-full max-w-6xl">
             <ImageHeroCarousel interval={10000} />
           </div>
+        </div>
+      </div>
+
+      {/* Categories Section */}
+      <div className="w-full">
+        <div className="mb-4 text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-gold-500">Categorias</h2>
+          <p className="text-muted-foreground text-sm mt-1">Explore produtos por categoria</p>
+        </div>
+
+        <div className="flex gap-4 justify-center flex-wrap">
+          {categories.filter(cat => cat !== 'all').map((category) => (
+            <Link
+              key={category}
+              href={`/categorias/${category.toLowerCase().replace(/ /g, '-')}`}
+              className="flex-shrink-0 flex flex-col items-center gap-3 group transition-all duration-200 hover:scale-105"
+            >
+              {/* Circular Card */}
+              <div className="w-24 h-24 rounded-full bg-white border border-gold-300 flex items-center justify-center shadow-[0_2px_8px_rgba(197,154,0,0.15)] group-hover:shadow-[0_4px_12px_rgba(197,154,0,0.3)] group-hover:-translate-y-1 transition-all duration-200">
+                {/* Placeholder icon/image */}
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold-200 to-gold-400 flex items-center justify-center">
+                  <span className="text-2xl">
+                    {category === 'carro' && '🚗'}
+                    {category === 'imovel' && '🏠'}
+                    {category === 'empresa' && '🏢'}
+                    {category === 'Premium' && '💎'}
+                    {category === 'eletronicos' && '📱'}
+                    {category === 'Cartas Contempladas' && '📄'}
+                    {category === 'Industrias' && '🏭'}
+                    {category === 'Embarcações' && '⛵'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Category Label */}
+              <span className="text-xs font-medium text-center max-w-[100px] text-slate-600 group-hover:text-gold-500 transition-colors">
+                {category}
+              </span>
+            </Link>
+          ))}
         </div>
       </div>
 
