@@ -318,18 +318,23 @@ export default function OpportunitiesStore({
             >
               {/* Circular Card */}
               <div className="w-24 h-24 rounded-full bg-white border border-gold-300 flex items-center justify-center shadow-[0_2px_8px_rgba(197,154,0,0.15)] group-hover:shadow-[0_4px_12px_rgba(197,154,0,0.3)] group-hover:-translate-y-1 transition-all duration-200">
-                {/* Placeholder icon/image */}
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold-200 to-gold-400 flex items-center justify-center">
-                  <span className="text-2xl">
-                    {category === 'carro' && '🚗'}
-                    {category === 'imovel' && '🏠'}
-                    {category === 'empresa' && '🏢'}
-                    {category === 'Premium' && '💎'}
-                    {category === 'eletronicos' && '📱'}
-                    {category === 'Cartas Contempladas' && '📄'}
-                    {category === 'Industrias' && '🏭'}
-                    {category === 'Embarcações' && '⛵'}
-                  </span>
+                {/* Category Icon Image */}
+                <div className="w-16 h-16 flex items-center justify-center">
+                  <img
+                    src={
+                      category === 'carro' ? '/icones-categorias/carros.png' :
+                        category === 'imovel' ? '/icones-categorias/imoveis.png' :
+                          category === 'empresa' ? '/icones-categorias/empresas.png' :
+                            category === 'Premium' ? '/icones-categorias/premium.png' :
+                              category === 'eletronicos' ? '/icones-categorias/eletronicos.png' :
+                                category === 'Cartas Contempladas' ? '/icones-categorias/Cartascontempladas.png' :
+                                  category === 'Industrias' ? '/icones-categorias/industrias.png' :
+                                    category === 'Embarcações' ? '/icones-categorias/embarcacoes.png' :
+                                      '/icones-categorias/premium.png'
+                    }
+                    alt={category}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
 
