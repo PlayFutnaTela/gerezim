@@ -56,6 +56,7 @@ type Product = {
   stock: number
   images: string[]
   created_at: string
+  currency?: string
 }
 
 // Type for user profile
@@ -364,9 +365,9 @@ export default function OpportunitiesStore({
               const container = document.getElementById('novidades-scroll')
               if (container) container.scrollLeft -= 300
             }}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-gold-300 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold-50"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 px-2 py-4 rounded-lg bg-white border border-gold-300 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold-50"
           >
-            <span className="text-gold-500 text-xl">←</span>
+            <span className="text-gold-500 text-2xl font-bold">←</span>
           </button>
 
           {/* Products Scroll Container */}
@@ -427,10 +428,24 @@ export default function OpportunitiesStore({
 
                       <CardContent className="p-3 pt-0">
                         <div className="text-lg font-bold text-gold-600">
-                          {new Intl.NumberFormat('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL'
-                          }).format(isProduct ? item.price : Number(item.value))}
+                          {isProduct && item.currency && item.currency !== 'BRL' ? (
+                            <div className="flex flex-col">
+                              <span>
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: item.currency
+                                }).format(item.price)}
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">
+                                PRODUTO EM {item.currency === 'USD' ? 'DÓLAR' : item.currency === 'EUR' ? 'EURO' : item.currency}
+                              </span>
+                            </div>
+                          ) : (
+                            new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            }).format(isProduct ? item.price : Number(item.value))
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -445,9 +460,9 @@ export default function OpportunitiesStore({
               const container = document.getElementById('novidades-scroll')
               if (container) container.scrollLeft += 300
             }}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-gold-300 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold-50"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 px-2 py-4 rounded-lg bg-white border border-gold-300 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold-50"
           >
-            <span className="text-gold-500 text-xl">→</span>
+            <span className="text-gold-500 text-2xl font-bold">→</span>
           </button>
         </div>
       </div>
@@ -634,8 +649,23 @@ export default function OpportunitiesStore({
 
               <CardContent className="flex-1">
                 <div className="text-2xl font-bold mb-2 text-gold-500">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                    'price' in item ? item.price : Number(item.value)
+                  {'currency' in item && item.currency && item.currency !== 'BRL' ? (
+                    <div className="flex flex-col">
+                      <span>
+                        {new Intl.NumberFormat('pt-BR', {
+                          style: 'currency',
+                          currency: item.currency
+                        }).format('price' in item ? item.price : Number(item.value))}
+                      </span>
+                      <span className="text-xs text-slate-500 font-semibold uppercase mt-1">
+                        PRODUTO EM {item.currency === 'USD' ? 'DÓLAR' : item.currency === 'EUR' ? 'EURO' : item.currency}
+                      </span>
+                    </div>
+                  ) : (
+                    new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    }).format('price' in item ? item.price : Number(item.value))
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3">

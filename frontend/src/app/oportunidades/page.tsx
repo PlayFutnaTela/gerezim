@@ -16,6 +16,7 @@ type Product = {
   stock: number
   images: string[]
   created_at: string
+  currency?: string
 }
 
 export default async function OpportunitiesPage() {
@@ -53,7 +54,7 @@ export default async function OpportunitiesPage() {
   // Fetch ONLY products (removed opportunities)
   const { data: products, error: productsError } = await supabase
     .from('products')
-    .select('id, title, subtitle, price, category, status, type, images, commission_percent, stock, created_at, description')
+    .select('id, title, subtitle, price, category, status, type, images, commission_percent, stock, created_at, description, currency')
     .eq('status', 'active') // Only show active products
     .order('created_at', { ascending: false })
     .limit(200)

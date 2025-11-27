@@ -4,10 +4,18 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     // Use service role client to bypass RLS for uploads
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error('Missing env vars:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!serviceRoleKey
+      })
+      return NextResponse.json({ error: 'Server configuration error: Missing Supabase credentials' }, { status: 500 })
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey)
 
     // Check if user is authenticated (using the request's auth context)
     // Note: In API routes, we can check auth via cookies or headers
@@ -42,7 +50,9 @@ export async function POST(request: NextRequest) {
     const uploadedPaths: string[] = []
 
     for (const file of files) {
-      const filename = `${Date.now()}-${file.name.replaceAll(' ', '_')}`
+      // Sanitize filename to avoid issues with special characters
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+      const filename = `${Date.now()}-${sanitizedName}`
       const path = `product-images/${productId}/${filename}`
 
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -62,6 +72,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ urls: uploadedPaths })
   } catch (err: any) {
     console.error('Upload API error', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: err.message || 'Unknown server error' }, { status: 500 })
   }
 }
