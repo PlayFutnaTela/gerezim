@@ -350,6 +350,108 @@ export default function OpportunitiesStore({
         </div>
       </div>
 
+      {/* Novidades Section */}
+      <div className="w-full">
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold tracking-tight text-gold-500">Novidades</h2>
+          <p className="text-muted-foreground text-sm mt-1">Produtos adicionados recentemente</p>
+        </div>
+
+        <div className="relative group">
+          {/* Left Arrow */}
+          <button
+            onClick={() => {
+              const container = document.getElementById('novidades-scroll')
+              if (container) container.scrollLeft -= 300
+            }}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-gold-300 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold-50"
+          >
+            <span className="text-gold-500 text-xl">←</span>
+          </button>
+
+          {/* Products Scroll Container */}
+          <div
+            id="novidades-scroll"
+            className="flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {[...products, ...opportunities]
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+              .slice(0, 12)
+              .map((item) => {
+                const isProduct = 'images' in item
+                const thumbnail = isProduct ? item.images?.[0] : ('photos' in item ? item.photos?.[0] : null)
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/oportunidades/${item.id}`}
+                    className="flex-shrink-0 w-64"
+                  >
+                    <Card className="group relative overflow-hidden transition-all duration-200 hover:shadow-lg cursor-pointer h-full">
+                      {/* Product Image */}
+                      <div className="aspect-square bg-slate-100 relative overflow-hidden">
+                        {thumbnail ? (
+                          <img
+                            src={thumbnail}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                            <span className="text-slate-400 text-4xl">📦</span>
+                          </div>
+                        )}
+
+                        {/* New Badge */}
+                        <div className="absolute top-2 left-2">
+                          <Badge className="bg-gold-500 text-white text-[10px]">NOVO</Badge>
+                        </div>
+                      </div>
+
+                      <CardHeader className="p-3 pb-2">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <Badge variant="outline" className="text-[9px]">
+                            {item.category}
+                          </Badge>
+                        </div>
+                        <CardTitle className="text-sm font-medium leading-tight line-clamp-2">
+                          {item.title}
+                        </CardTitle>
+                        {isProduct && item.subtitle && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                            {item.subtitle}
+                          </p>
+                        )}
+                      </CardHeader>
+
+                      <CardContent className="p-3 pt-0">
+                        <div className="text-lg font-bold text-gold-600">
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          }).format(isProduct ? item.price : Number(item.value))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )
+              })}
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={() => {
+              const container = document.getElementById('novidades-scroll')
+              if (container) container.scrollLeft += 300
+            }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-gold-300 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold-50"
+          >
+            <span className="text-gold-500 text-xl">→</span>
+          </button>
+        </div>
+      </div>
+
       {/* Filters and Search Section */}
       <div className="space-y-4">
         {/* Search Bar */}
